@@ -19,8 +19,8 @@ export const AppSidebar = () => {
   const { open } = useSidebar();
   const userLinks = sidebarLinks[user.role] || [];
 
-  const getIcon = (iconName: string) => {
-    const Icon = Icons[iconName as keyof typeof Icons] as React.ComponentType<{ className?: string }>;
+  const getIcon = (iconName) => {
+    const Icon = Icons[iconName];
     return Icon || Icons.Circle;
   };
 

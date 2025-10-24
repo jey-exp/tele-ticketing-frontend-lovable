@@ -9,17 +9,9 @@ export const ROLES = {
   MANAGER: 'Manager',
   CXO: 'CXO',
   NOC_ADMIN: 'NOC Admin',
-} as const;
+};
 
-export type Role = typeof ROLES[keyof typeof ROLES];
-
-export interface SidebarLink {
-  label: string;
-  path: string;
-  icon: string;
-}
-
-export const sidebarLinks: Record<Role, SidebarLink[]> = {
+export const sidebarLinks = {
   [ROLES.CUSTOMER]: [
     { label: 'Dashboard', path: '/dashboard', icon: 'LayoutDashboard' },
     { label: 'Raise a Ticket', path: '/new-ticket', icon: 'Plus' },

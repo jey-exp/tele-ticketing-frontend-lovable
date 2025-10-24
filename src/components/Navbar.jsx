@@ -15,7 +15,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 export const Navbar = () => {
   const { user } = useUser();
 
-  const getInitials = (name: string) => {
+  const getInitials = (name) => {
     return name
       .split(' ')
       .map((n) => n[0])

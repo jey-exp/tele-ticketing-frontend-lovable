@@ -1,11 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-interface PagePlaceholderProps {
-  title: string;
-  description?: string;
-}
-
-export const PagePlaceholder = ({ title, description }: PagePlaceholderProps) => {
+export const PagePlaceholder = ({ title, description }) => {
   return (
     <div className="container mx-auto max-w-4xl">
       <Card>
