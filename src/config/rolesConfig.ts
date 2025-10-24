@@ -65,5 +65,9 @@ export const sidebarLinks: Record<Role, SidebarLink[]> = {
   [ROLES.CXO]: [
     { label: 'Reports', path: '/reports', icon: 'BarChart3' },
   ],
-  [ROLES.NOC_ADMIN]: [],
+  [ROLES.NOC_ADMIN]: [
+    {
+      label: 'Heat Map',path: '/heat-map', icon: 'MapPin'
+    }
+  ],
 };

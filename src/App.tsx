@@ -17,6 +17,7 @@ import SLARisks from "./pages/SLARisks";
 import AllTickets from "./pages/AllTickets";
 import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
+import HeatMap from "./pages/HeatMap";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ const App = () => (
               <Route path="sla-risks" element={<SLARisks />} />
               <Route path="all-tickets" element={<AllTickets />} />
               <Route path="reports" element={<Reports />} />
+              <Route path="heat-map" element={<HeatMap />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
