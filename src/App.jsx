@@ -7,6 +7,7 @@ import { UserProvider } from "./contexts/UserContext";
 import { Layout } from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import NewTicket from "./pages/NewTicket";
+import CreateTicket from "./pages/CreateTicket";
 import Feedback from "./pages/Feedback";
 import Notifications from "./pages/Notifications";
 import MyTickets from "./pages/MyTickets";
@@ -33,6 +34,7 @@ const App = () => (
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="new-ticket" element={<NewTicket />} />
+              <Route path="create-ticket" element={<CreateTicket />} />
               <Route path="feedback" element={<Feedback />} />
               <Route path="notifications" element={<Notifications />} />
               <Route path="my-tickets" element={<MyTickets />} />
