@@ -7,8 +7,10 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Clock, User, AlertCircle, Calendar, CheckCircle2 } from 'lucide-react';
+import { Clock, User, AlertCircle, Calendar, CheckCircle2, Building } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
+import { useUser } from '@/contexts/UserContext';
+import { ROLES } from '@/config/rolesConfig';
 
 const getPriorityColor = (priority) => {
   switch (priority) {
@@ -39,6 +41,8 @@ const getStatusColor = (status) => {
 };
 
 export const TicketDetailModal = ({ ticket, open, onOpenChange }) => {
+  const { user } = useUser();
+  
   if (!ticket) return null;
 
   return (
@@ -75,6 +79,15 @@ export const TicketDetailModal = ({ ticket, open, onOpenChange }) => {
           {/* Ticket Details */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-3">
+              {/* Customer info for Agent role */}
+              {user.role === ROLES.AGENT && ticket.customer && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Building className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium">Customer:</span>
+                  <span className="text-muted-foreground">{ticket.customer.name}</span>
+                </div>
+              )}
+              
               <div className="flex items-center gap-2 text-sm">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span className="font-medium">Created:</span>

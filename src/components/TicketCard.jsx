@@ -1,7 +1,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, AlertCircle, User } from 'lucide-react';
+import { Clock, AlertCircle, User, Building } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { useUser } from '@/contexts/UserContext';
+import { ROLES } from '@/config/rolesConfig';
 
 const getPriorityColor = (priority) => {
   switch (priority) {
@@ -32,6 +34,8 @@ const getStatusColor = (status) => {
 };
 
 export const TicketCard = ({ ticket, onClick }) => {
+  const { user } = useUser();
+  
   return (
     <Card
       className="cursor-pointer transition-all hover:shadow-lg"
@@ -77,6 +81,14 @@ export const TicketCard = ({ ticket, onClick }) => {
             <div className="flex items-center gap-1">
               <User className="h-3 w-3" />
               <span>{ticket.assignedTo[0].name}</span>
+            </div>
+          )}
+          
+          {/* Show customer info for Agent role */}
+          {user.role === ROLES.AGENT && ticket.customer && (
+            <div className="flex items-center gap-1">
+              <Building className="h-3 w-3" />
+              <span>{ticket.customer.name}</span>
             </div>
           )}
         </div>

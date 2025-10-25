@@ -3,27 +3,35 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Ticket, CheckCircle2, MessageSquare, Plus, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { mockTickets, TICKET_STATUS } from '@/data/mockTickets';
+import { mockTickets, TICKET_STATUS, getAgentTickets } from '@/data/mockTickets';
 import { formatDistanceToNow } from 'date-fns';
+import { useUser } from '@/contexts/UserContext';
+import { ROLES } from '@/config/rolesConfig';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { user } = useUser();
 
-  // Calculate stats
-  const activeTickets = mockTickets.filter(
+  // Get tickets based on user role
+  const userTickets = user.role === ROLES.AGENT 
+    ? getAgentTickets(user.id) 
+    : mockTickets.filter(t => t.customer?.id === user.id);
+
+  // Calculate stats based on user's tickets
+  const activeTickets = userTickets.filter(
     (t) => t.status !== TICKET_STATUS.RESOLVED
   ).length;
   
-  const resolvedTickets = mockTickets.filter(
+  const resolvedTickets = userTickets.filter(
     (t) => t.status === TICKET_STATUS.RESOLVED
   ).length;
   
-  const feedbackRequiredTickets = mockTickets.filter(
+  const feedbackRequiredTickets = userTickets.filter(
     (t) => t.status === TICKET_STATUS.NEEDS_FEEDBACK
   ).length;
 
-  // Get recent activities (last 5 ticket logs)
-  const recentActivities = mockTickets
+  // Get recent activities (last 5 ticket logs from user's tickets)
+  const recentActivities = userTickets
     .flatMap((ticket) =>
       ticket.logs.map((log) => ({
         ...log,
@@ -33,6 +41,10 @@ const Dashboard = () => {
     )
     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
     .slice(0, 5);
+
+  const getButtonText = () => {
+    return user.role === ROLES.AGENT ? 'Create a Ticket' : 'Raise a Ticket';
+  };
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -46,7 +58,7 @@ const Dashboard = () => {
         </div>
         <Button onClick={() => navigate('/new-ticket')} size="lg">
           <Plus className="h-4 w-4 mr-2" />
-          Raise a Ticket
+          {getButtonText()}
         </Button>
       </div>
 

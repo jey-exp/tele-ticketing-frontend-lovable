@@ -14,9 +14,10 @@ export const useUser = () => {
 export const UserProvider = ({ children }) => {
   // Mock logged-in user - Change role here to test different views
   const [user, setUser] = useState({
-    name: 'John Doe',
-    role: ROLES.CUSTOMER, // Change this to test different roles
-    email: 'john.doe@example.com',
+    name: 'Jane Doe',
+    role: ROLES.AGENT, // Change this to test different roles
+    email: 'jane.doe@example.com',
+    id: 'AGENT007',
   });
 
   return (

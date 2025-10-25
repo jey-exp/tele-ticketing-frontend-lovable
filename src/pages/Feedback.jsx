@@ -18,21 +18,30 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { getTicketsNeedingFeedback, getTicketsWithFeedback } from '@/data/mockTickets';
-import { Star } from 'lucide-react';
+import { getTicketsNeedingFeedback, getTicketsWithFeedback, getAgentTicketsNeedingFeedback, getAgentTicketsWithFeedback } from '@/data/mockTickets';
+import { Star, Building } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { useUser } from '@/contexts/UserContext';
+import { ROLES } from '@/config/rolesConfig';
 
 const Feedback = () => {
   const { toast } = useToast();
+  const { user } = useUser();
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [feedbackText, setFeedbackText] = useState('');
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
-  const ticketsNeedingFeedback = getTicketsNeedingFeedback();
-  const ticketsWithFeedback = getTicketsWithFeedback();
+  // Get tickets based on user role
+  const ticketsNeedingFeedback = user.role === ROLES.AGENT 
+    ? getAgentTicketsNeedingFeedback(user.id)
+    : getTicketsNeedingFeedback();
+    
+  const ticketsWithFeedback = user.role === ROLES.AGENT
+    ? getAgentTicketsWithFeedback(user.id)
+    : getTicketsWithFeedback();
 
   const handleCardClick = (ticket) => {
     setSelectedTicket(ticket);
@@ -112,6 +121,13 @@ const Feedback = () => {
                       <Badge variant="outline" className="text-xs">
                         {ticket.category}
                       </Badge>
+                      {/* Show customer name for Agent role */}
+                      {user.role === ROLES.AGENT && ticket.customer && (
+                        <Badge variant="outline" className="text-xs flex items-center gap-1">
+                          <Building className="h-3 w-3" />
+                          {ticket.customer.name}
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -138,6 +154,7 @@ const Feedback = () => {
                   <TableRow>
                     <TableHead>Ticket ID</TableHead>
                     <TableHead>Title</TableHead>
+                    {user.role === ROLES.AGENT && <TableHead>Customer</TableHead>}
                     <TableHead>Rating</TableHead>
                     <TableHead>Feedback</TableHead>
                     <TableHead>Resolved On</TableHead>
@@ -148,6 +165,11 @@ const Feedback = () => {
                     <TableRow key={ticket.id}>
                       <TableCell className="font-medium">{ticket.id}</TableCell>
                       <TableCell className="max-w-xs truncate">{ticket.title}</TableCell>
+                      {user.role === ROLES.AGENT && (
+                        <TableCell className="max-w-xs truncate">
+                          {ticket.customer?.name || '-'}
+                        </TableCell>
+                      )}
                       <TableCell>
                         <div className="flex items-center gap-1">
                           {[...Array(5)].map((_, i) => (
@@ -195,6 +217,11 @@ const Feedback = () => {
               <div className="space-y-2">
                 <h4 className="text-sm font-semibold">Ticket Details</h4>
                 <p className="text-sm text-muted-foreground">{selectedTicket.title}</p>
+                {user.role === ROLES.AGENT && selectedTicket.customer && (
+                  <p className="text-sm text-muted-foreground">
+                    <span className="font-medium">Customer:</span> {selectedTicket.customer.name}
+                  </p>
+                )}
               </div>
 
               {/* Star Rating */}

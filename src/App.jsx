@@ -7,6 +7,7 @@ import { UserProvider } from "./contexts/UserContext";
 import { Layout } from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import NewTicket from "./pages/NewTicket";
+import AgentNewTicket from "./pages/AgentNewTicket";
 import Feedback from "./pages/Feedback";
 import Notifications from "./pages/Notifications";
 import MyTickets from "./pages/MyTickets";
@@ -18,6 +19,36 @@ import AllTickets from "./pages/AllTickets";
 import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
 import HeatMap from "./pages/HeatMap";
+import { useUser } from "./contexts/UserContext";
+import { ROLES } from "./config/rolesConfig";
+
+const AppRoutes = () => {
+  const { user } = useUser();
+  
+  return (
+    <Routes>
+      <Route path="/" element={<Layout />}>
+        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route 
+          path="new-ticket" 
+          element={user.role === ROLES.AGENT ? <AgentNewTicket /> : <NewTicket />} 
+        />
+        <Route path="feedback" element={<Feedback />} />
+        <Route path="notifications" element={<Notifications />} />
+        <Route path="my-tickets" element={<MyTickets />} />
+        <Route path="pending-tickets" element={<PendingTickets />} />
+        <Route path="resolution-history" element={<ResolutionHistory />} />
+        <Route path="active-tickets" element={<ActiveTickets />} />
+        <Route path="sla-risks" element={<SLARisks />} />
+        <Route path="all-tickets" element={<AllTickets />} />
+        <Route path="reports" element={<Reports />} />
+        <Route path="heat-map" element={<HeatMap />} />
+        <Route path="*" element={<NotFound />} />
+      </Route>
+    </Routes>
+  );
+};
 
 const queryClient = new QueryClient();
 
@@ -28,24 +59,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Layout />}>
-              <Route index element={<Navigate to="/dashboard" replace />} />
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="new-ticket" element={<NewTicket />} />
-              <Route path="feedback" element={<Feedback />} />
-              <Route path="notifications" element={<Notifications />} />
-              <Route path="my-tickets" element={<MyTickets />} />
-              <Route path="pending-tickets" element={<PendingTickets />} />
-              <Route path="resolution-history" element={<ResolutionHistory />} />
-              <Route path="active-tickets" element={<ActiveTickets />} />
-              <Route path="sla-risks" element={<SLARisks />} />
-              <Route path="all-tickets" element={<AllTickets />} />
-              <Route path="reports" element={<Reports />} />
-              <Route path="heat-map" element={<HeatMap />} />
-              <Route path="*" element={<NotFound />} />
-            </Route>
-          </Routes>
+          <AppRoutes />
         </BrowserRouter>
       </UserProvider>
     </TooltipProvider>

@@ -25,6 +25,7 @@ export const mockTickets = [
     id: 'TKT12345',
     title: 'Internet connection is unstable in conference room',
     customer: { id: 'CUST001', name: 'Global Corp Inc.' },
+    createdBy: { id: 'AGENT007', name: 'Jane Doe', type: 'Agent' },
     status: TICKET_STATUS.IN_PROGRESS,
     priority: PRIORITY.HIGH,
     severity: SEVERITY.CRITICAL,
@@ -38,7 +39,7 @@ export const mockTickets = [
     slaRemaining: '2h 30m',
     assignedTo: [{ id: 'ENG007', name: 'Alice Johnson' }],
     logs: [
-      { timestamp: '2025-01-20T10:00:00Z', update: 'Ticket created by customer.' },
+      { timestamp: '2025-01-20T10:00:00Z', update: 'Ticket created by Agent Jane Doe for Global Corp Inc.' },
       { timestamp: '2025-01-20T10:15:00Z', update: 'Assigned to Alice Johnson (L1 Engineer).' },
       { timestamp: '2025-01-20T11:00:00Z', update: 'Engineer started investigating the issue.' },
     ],
@@ -47,6 +48,7 @@ export const mockTickets = [
     id: 'TKT12346',
     title: 'Email server down - unable to send/receive emails',
     customer: { id: 'CUST001', name: 'Global Corp Inc.' },
+    createdBy: { id: 'CUSTOMER001', name: 'John Smith', type: 'Customer' },
     status: TICKET_STATUS.NEEDS_FEEDBACK,
     priority: PRIORITY.HIGH,
     severity: SEVERITY.MAJOR,
@@ -68,7 +70,8 @@ export const mockTickets = [
   {
     id: 'TKT12347',
     title: 'VPN connection failing for remote employees',
-    customer: { id: 'CUST001', name: 'Global Corp Inc.' },
+    customer: { id: 'CUST002', name: 'Acme Industries Ltd.' },
+    createdBy: { id: 'AGENT008', name: 'Mike Wilson', type: 'Agent' },
     status: TICKET_STATUS.RESOLVED,
     priority: PRIORITY.MEDIUM,
     severity: SEVERITY.MAJOR,
@@ -82,7 +85,7 @@ export const mockTickets = [
     slaRemaining: null,
     assignedTo: [{ id: 'ENG005', name: 'Charlie Brown' }],
     logs: [
-      { timestamp: '2025-01-15T09:00:00Z', update: 'Ticket created by customer.' },
+      { timestamp: '2025-01-15T09:00:00Z', update: 'Ticket created by Agent Mike Wilson for Acme Industries Ltd.' },
       { timestamp: '2025-01-15T09:20:00Z', update: 'Assigned to Charlie Brown (L1 Engineer).' },
       { timestamp: '2025-01-15T16:00:00Z', update: 'VPN configuration updated. Issue resolved.' },
     ],
@@ -93,7 +96,8 @@ export const mockTickets = [
   {
     id: 'TKT12348',
     title: 'Slow network speed in Building A',
-    customer: { id: 'CUST001', name: 'Global Corp Inc.' },
+    customer: { id: 'CUST003', name: 'Tech Solutions Pro' },
+    createdBy: { id: 'AGENT007', name: 'Jane Doe', type: 'Agent' },
     status: TICKET_STATUS.PENDING,
     priority: PRIORITY.LOW,
     severity: SEVERITY.MINOR,
@@ -107,13 +111,14 @@ export const mockTickets = [
     slaRemaining: '20h 15m',
     assignedTo: [],
     logs: [
-      { timestamp: '2025-01-22T14:00:00Z', update: 'Ticket created by customer.' },
+      { timestamp: '2025-01-22T14:00:00Z', update: 'Ticket created by Agent Jane Doe for Tech Solutions Pro.' },
     ],
   },
   {
     id: 'TKT12349',
     title: 'Printer network connectivity issue',
-    customer: { id: 'CUST001', name: 'Global Corp Inc.' },
+    customer: { id: 'CUST004', name: 'Metro Healthcare Systems' },
+    createdBy: { id: 'AGENT009', name: 'Sarah Connor', type: 'Agent' },
     status: TICKET_STATUS.NEEDS_FEEDBACK,
     priority: PRIORITY.MEDIUM,
     severity: SEVERITY.MINOR,
@@ -127,7 +132,7 @@ export const mockTickets = [
     slaRemaining: null,
     assignedTo: [{ id: 'FLD001', name: 'Diana Prince' }],
     logs: [
-      { timestamp: '2025-01-19T11:00:00Z', update: 'Ticket created by customer.' },
+      { timestamp: '2025-01-19T11:00:00Z', update: 'Ticket created by Agent Sarah Connor for Metro Healthcare Systems.' },
       { timestamp: '2025-01-19T11:30:00Z', update: 'Assigned to Field Engineer Diana Prince.' },
       { timestamp: '2025-01-19T15:30:00Z', update: 'Printer network settings reconfigured. Issue resolved.' },
     ],
@@ -157,5 +162,37 @@ export const getTicketsNeedingFeedback = () => {
 export const getTicketsWithFeedback = () => {
   return mockTickets.filter(
     (ticket) => ticket.feedbackGiven === true
+  );
+};
+
+// Helper function to get tickets needing feedback for Agent (tickets they created)
+export const getAgentTicketsNeedingFeedback = (agentId) => {
+  return mockTickets.filter(
+    (ticket) => ticket.status === TICKET_STATUS.NEEDS_FEEDBACK && 
+                ticket.createdBy?.id === agentId && 
+                ticket.createdBy?.type === 'Agent'
+  );
+};
+
+// Helper function to get tickets with feedback for Agent (tickets they created)
+export const getAgentTicketsWithFeedback = (agentId) => {
+  return mockTickets.filter(
+    (ticket) => ticket.feedbackGiven === true && 
+                ticket.createdBy?.id === agentId && 
+                ticket.createdBy?.type === 'Agent'
+  );
+};
+
+// Helper function to get tickets created by a specific agent
+export const getTicketsByAgent = (agentId) => {
+  return mockTickets.filter(
+    (ticket) => ticket.createdBy?.id === agentId && ticket.createdBy?.type === 'Agent'
+  );
+};
+
+// Helper function to get agent's tickets (for Agent role)
+export const getAgentTickets = (agentId) => {
+  return mockTickets.filter(
+    (ticket) => ticket.createdBy?.id === agentId && ticket.createdBy?.type === 'Agent'
   );
 };

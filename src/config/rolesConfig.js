@@ -21,7 +21,7 @@ export const sidebarLinks = {
   ],
   [ROLES.AGENT]: [
     { label: 'Dashboard', path: '/dashboard', icon: 'LayoutDashboard' },
-    { label: 'Raise a Ticket', path: '/new-ticket', icon: 'Plus' },
+    { label: 'Create a Ticket', path: '/new-ticket', icon: 'Plus' },
     { label: 'Feedback Center', path: '/feedback', icon: 'MessageSquare' },
     { label: 'Notification Center', path: '/notifications', icon: 'Bell' },
     { label: 'My Tickets', path: '/my-tickets', icon: 'Ticket' },

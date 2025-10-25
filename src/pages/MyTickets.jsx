@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { TicketCard } from '@/components/TicketCard';
 import { TicketDetailModal } from '@/components/TicketDetailModal';
-import { getActiveTickets, TICKET_STATUS } from '@/data/mockTickets';
+import { getActiveTickets, getAgentTickets, TICKET_STATUS } from '@/data/mockTickets';
+import { useUser } from '@/contexts/UserContext';
+import { ROLES } from '@/config/rolesConfig';
 import {
   Select,
   SelectContent,
@@ -13,20 +15,25 @@ import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 
 const MyTickets = () => {
+  const { user } = useUser();
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const activeTickets = getActiveTickets();
+  // Get tickets based on user role
+  const userTickets = user.role === ROLES.AGENT 
+    ? getAgentTickets(user.id) 
+    : getActiveTickets();
 
   // Filter tickets
-  const filteredTickets = activeTickets.filter((ticket) => {
+  const filteredTickets = userTickets.filter((ticket) => {
     const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
     const matchesSearch =
       ticket.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
       ticket.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      ticket.description.toLowerCase().includes(searchQuery.toLowerCase());
+      ticket.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (user.role === ROLES.AGENT && ticket.customer?.name.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesStatus && matchesSearch;
   });
 
@@ -35,12 +42,22 @@ const MyTickets = () => {
     setShowDetailModal(true);
   };
 
+  const getPageTitle = () => {
+    return user.role === ROLES.AGENT ? 'My Created Tickets' : 'My Tickets';
+  };
+
+  const getPageDescription = () => {
+    return user.role === ROLES.AGENT 
+      ? 'View and track tickets you have created for customers' 
+      : 'View and track all your active tickets';
+  };
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">My Tickets</h1>
-        <p className="text-muted-foreground mt-1">View and track all your active tickets</p>
+        <h1 className="text-3xl font-bold tracking-tight">{getPageTitle()}</h1>
+        <p className="text-muted-foreground mt-1">{getPageDescription()}</p>
       </div>
 
       {/* Filters */}
@@ -48,7 +65,9 @@ const MyTickets = () => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search tickets by ID, title, or description..."
+            placeholder={user.role === ROLES.AGENT 
+              ? "Search tickets by ID, title, description, or customer..." 
+              : "Search tickets by ID, title, or description..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
