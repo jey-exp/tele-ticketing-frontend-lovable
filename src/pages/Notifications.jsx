@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { NotificationItem } from '@/components/NotificationItem';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { mockNotifications, triageOfficerNotifications, fieldEngineerNotifications, getUnreadNotifications, markAsRead } from '@/data/mockNotifications';
+import { mockNotifications, triageOfficerNotifications, fieldEngineerNotifications, l1EngineerNotifications, nocEngineerNotifications, getUnreadNotifications, markAsRead } from '@/data/mockNotifications';
 import { Bell, CheckCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/UserContext';
@@ -18,6 +18,10 @@ const Notifications = () => {
       return triageOfficerNotifications;
     } else if (user.role === ROLES.FIELD_ENGINEER) {
       return fieldEngineerNotifications;
+    } else if (user.role === ROLES.L1_ENGINEER) {
+      return l1EngineerNotifications;
+    } else if (user.role === ROLES.NOC_ENGINEER) {
+      return nocEngineerNotifications;
     }
     return mockNotifications;
   };

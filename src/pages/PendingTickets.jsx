@@ -84,7 +84,7 @@ const PendingTickets = () => {
       toast.success('Ticket updated successfully', {
         description: `Priority: ${editedPriority}, Severity: ${editedSeverity}, Assigned to ${selectedEngineers.length} engineer(s)`,
       });
-    } else if (user.role === ROLES.FIELD_ENGINEER) {
+    } else if (user.role === ROLES.FIELD_ENGINEER || user.role === ROLES.L1_ENGINEER || user.role === ROLES.NOC_ENGINEER) {
       if (updateText.trim()) {
         toast.success('Update added to ticket', {
           description: `Your update has been logged to ticket #${selectedTicket.id}`,
@@ -92,8 +92,11 @@ const PendingTickets = () => {
         setUpdateText('');
       }
       if (newStatus !== selectedTicket.status) {
+        const statusMessage = newStatus === TICKET_STATUS.AWAITING_FIELD 
+          ? 'Field visit requested. Ticket sent to Triage Officer for assignment.'
+          : `Status changed to: ${newStatus}`;
         toast.success('Ticket status updated', {
-          description: `Status changed to: ${newStatus}`,
+          description: statusMessage,
         });
       }
     }
@@ -461,6 +464,44 @@ const PendingTickets = () => {
                   </div>
                 )}
 
+                {/* L1 & NOC Engineer Actions */}
+                {(user.role === ROLES.L1_ENGINEER || user.role === ROLES.NOC_ENGINEER) && (
+                  <div className="space-y-4 border-t pt-4">
+                    <h3 className="font-semibold">Engineer Actions</h3>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="update">Add Update</Label>
+                      <Textarea
+                        id="update"
+                        placeholder="Describe your progress, findings, or troubleshooting steps..."
+                        value={updateText}
+                        onChange={(e) => setUpdateText(e.target.value)}
+                        rows={4}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="status">Change Status</Label>
+                      <Select value={newStatus} onValueChange={setNewStatus}>
+                        <SelectTrigger id="status">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={TICKET_STATUS.IN_PROGRESS}>
+                            In Progress
+                          </SelectItem>
+                          <SelectItem value={TICKET_STATUS.RESOLVED}>
+                            Resolved
+                          </SelectItem>
+                          <SelectItem value={TICKET_STATUS.AWAITING_FIELD}>
+                            Request Field Visit
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
+
                 {/* Activity Timeline */}
                 <div className="border-t pt-4">
                   <h3 className="font-semibold mb-3 flex items-center gap-2">
@@ -493,7 +534,9 @@ const PendingTickets = () => {
                   Close
                 </Button>
                 <Button onClick={handleSaveChanges}>
-                  {user.role === ROLES.TRIAGE_OFFICER ? 'Save Changes' : 'Save Update'}
+                  {user.role === ROLES.TRIAGE_OFFICER ? 'Save Changes' : 
+                   (user.role === ROLES.L1_ENGINEER || user.role === ROLES.NOC_ENGINEER) && newStatus === TICKET_STATUS.AWAITING_FIELD ? 'Request Field Visit' :
+                   'Save Update'}
                 </Button>
               </DialogFooter>
             </>

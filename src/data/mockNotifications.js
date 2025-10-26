@@ -118,6 +118,62 @@ export const fieldEngineerNotifications = [
   },
 ];
 
+// L1 Engineer specific notifications
+export const l1EngineerNotifications = [
+  {
+    id: 'NOTIF_L1_001',
+    type: NOTIFICATION_TYPE.ASSIGNED,
+    message: '➡️ New Ticket #12355 assigned to you by the Triage Officer — Network latency issue.',
+    timestamp: '2025-01-23T10:15:00Z',
+    read: false,
+    ticketId: 'TKT12355',
+  },
+  {
+    id: 'NOTIF_L1_002',
+    type: NOTIFICATION_TYPE.IN_PROGRESS,
+    message: '💬 Customer added a new comment on Ticket #12349 — Please review.',
+    timestamp: '2025-01-22T15:30:00Z',
+    read: false,
+    ticketId: 'TKT12349',
+  },
+  {
+    id: 'NOTIF_L1_003',
+    type: NOTIFICATION_TYPE.AWAITING_FIELD,
+    message: '✅ Your request for a field visit on Ticket #12350 has been approved and assigned.',
+    timestamp: '2025-01-21T11:00:00Z',
+    read: true,
+    ticketId: 'TKT12350',
+  },
+];
+
+// NOC Engineer specific notifications
+export const nocEngineerNotifications = [
+  {
+    id: 'NOTIF_NOC_001',
+    type: NOTIFICATION_TYPE.ASSIGNED,
+    message: '➡️ New Ticket #12356 assigned to you by the Triage Officer — Server monitoring alert.',
+    timestamp: '2025-01-23T08:45:00Z',
+    read: false,
+    ticketId: 'TKT12356',
+  },
+  {
+    id: 'NOTIF_NOC_002',
+    type: NOTIFICATION_TYPE.IN_PROGRESS,
+    message: '💬 Customer added a new comment on Ticket #12348 — Requires immediate attention.',
+    timestamp: '2025-01-22T14:20:00Z',
+    read: false,
+    ticketId: 'TKT12348',
+  },
+  {
+    id: 'NOTIF_NOC_003',
+    type: NOTIFICATION_TYPE.AWAITING_FIELD,
+    message: '✅ Your request for a field visit on Ticket #12352 has been approved and assigned.',
+    timestamp: '2025-01-21T09:30:00Z',
+    read: true,
+    ticketId: 'TKT12352',
+  },
+];
+
 // Helper to get unread notifications
 export const getUnreadNotifications = () => {
   return mockNotifications.filter((notif) => !notif.read);
