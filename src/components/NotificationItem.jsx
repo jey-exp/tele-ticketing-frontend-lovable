@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { formatDistanceToNow } from 'date-fns';
-import { CheckCircle2, Wrench, AlertCircle, UserPlus, Star } from 'lucide-react';
+import { CheckCircle2, Wrench, AlertCircle, UserPlus, Star, FileText, MapPin, MessageSquare } from 'lucide-react';
 
 const getNotificationIcon = (type) => {
   switch (type) {
@@ -15,7 +15,14 @@ const getNotificationIcon = (type) => {
     case 'delayed':
       return <AlertCircle className="h-5 w-5 text-red-600" />;
     case 'feedback_requested':
+    case 'needs_feedback':
       return <Star className="h-5 w-5 text-yellow-600" />;
+    case 'new_ticket':
+      return <FileText className="h-5 w-5 text-indigo-600" />;
+    case 'field_visit_complete':
+      return <CheckCircle2 className="h-5 w-5 text-teal-600" />;
+    case 'awaiting_field':
+      return <MapPin className="h-5 w-5 text-amber-600" />;
     default:
       return <CheckCircle2 className="h-5 w-5 text-gray-600" />;
   }

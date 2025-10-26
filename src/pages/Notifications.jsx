@@ -2,29 +2,43 @@ import { useState } from 'react';
 import { NotificationItem } from '@/components/NotificationItem';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { mockNotifications, getUnreadNotifications, markAsRead } from '@/data/mockNotifications';
+import { mockNotifications, triageOfficerNotifications, fieldEngineerNotifications, getUnreadNotifications, markAsRead } from '@/data/mockNotifications';
 import { Bell, CheckCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useUser } from '@/contexts/UserContext';
+import { ROLES } from '@/config/rolesConfig';
 
 const Notifications = () => {
   const { toast } = useToast();
-  const [notifications, setNotifications] = useState(mockNotifications);
+  const { user } = useUser();
+  
+  // Get notifications based on user role
+  const getNotificationsForRole = () => {
+    if (user.role === ROLES.TRIAGE_OFFICER) {
+      return triageOfficerNotifications;
+    } else if (user.role === ROLES.FIELD_ENGINEER) {
+      return fieldEngineerNotifications;
+    }
+    return mockNotifications;
+  };
+  
+  const [notifications, setNotifications] = useState(getNotificationsForRole());
   const [filter, setFilter] = useState('all'); // 'all' or 'unread'
 
-  const unreadCount = getUnreadNotifications().length;
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   const handleNotificationClick = (notification) => {
     if (!notification.read) {
-      markAsRead(notification.id);
-      setNotifications([...mockNotifications]); // Trigger re-render
+      const updatedNotifications = notifications.map(n =>
+        n.id === notification.id ? { ...n, read: true } : n
+      );
+      setNotifications(updatedNotifications);
     }
   };
 
   const handleMarkAllRead = () => {
-    mockNotifications.forEach((notif) => {
-      notif.read = true;
-    });
-    setNotifications([...mockNotifications]);
+    const updatedNotifications = notifications.map(n => ({ ...n, read: true }));
+    setNotifications(updatedNotifications);
     toast({
       title: 'All notifications marked as read',
     });
