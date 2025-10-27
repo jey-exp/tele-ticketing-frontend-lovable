@@ -43,7 +43,8 @@ export const TicketDetailModal = ({ ticket, open, onOpenChange }) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-2xl h-auto max-h-[85vh] overflow-hidden flex flex-col">
+        <div className="overflow-y-auto flex-1 -mx-6 px-6">
         <DialogHeader>
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-2 flex-1">
@@ -158,6 +159,7 @@ export const TicketDetailModal = ({ ticket, open, onOpenChange }) => {
               ))}
             </div>
           </div>
+        </div>
         </div>
       </DialogContent>
     </Dialog>

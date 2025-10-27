@@ -249,7 +249,8 @@ const PendingTickets = () => {
 
       {/* Ticket Detail Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-3xl h-auto max-h-[85vh] overflow-hidden flex flex-col">
+          <div className="overflow-y-auto flex-1 -mx-6 px-6">
           {selectedTicket && (
             <>
               <DialogHeader>
@@ -524,12 +525,13 @@ const PendingTickets = () => {
                           </p>
                         </div>
                       </div>
-                    ))}
+                     ))}
                   </div>
                 </div>
               </div>
+              </div>
 
-              <DialogFooter>
+              <DialogFooter className="-mx-6 px-6 pt-4">
                 <Button variant="outline" onClick={() => setIsModalOpen(false)}>
                   Close
                 </Button>
