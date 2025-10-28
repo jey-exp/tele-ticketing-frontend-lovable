@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { UserProvider } from "./contexts/UserContext";
+import { UserProvider, useUser } from "./contexts/UserContext";
 import { Layout } from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import NewTicket from "./pages/NewTicket";
@@ -20,8 +20,24 @@ import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
 import HeatMap from "./pages/HeatMap";
 import AddUser from "./pages/AddUser";
+import Login from "./pages/Login";
 
 const queryClient = new QueryClient();
+
+// Protected route wrapper
+const ProtectedRoute = ({ children }) => {
+  const { user, isLoading } = useUser();
+
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -31,7 +47,8 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Layout />}>
+            <Route path="/login" element={<Login />} />
+            <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="new-ticket" element={<NewTicket />} />

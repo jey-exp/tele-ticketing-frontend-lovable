@@ -1,5 +1,6 @@
-import { Bell, User } from 'lucide-react';
+import { Bell, User, LogOut } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import {
@@ -13,7 +14,8 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 export const Navbar = () => {
-  const { user } = useUser();
+  const { user, logout } = useUser();
+  const navigate = useNavigate();
 
   const getInitials = (name) => {
     return name
@@ -21,6 +23,11 @@ export const Navbar = () => {
       .map((n) => n[0])
       .join('')
       .toUpperCase();
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
 
   return (
@@ -70,7 +77,8 @@ export const Navbar = () => {
                 <User className="mr-2 h-4 w-4" />
                 Profile Settings
               </DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive">
+              <DropdownMenuItem className="text-destructive" onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
                 Logout
               </DropdownMenuItem>
             </DropdownMenuContent>
