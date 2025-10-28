@@ -52,6 +52,7 @@ export const sidebarLinks = {
   ],
   [ROLES.MANAGER]: [
     { label: 'All Tickets', path: '/all-tickets', icon: 'List' },
+    { label: 'Add User', path: '/add-user', icon: 'UserPlus' },
     { label: 'Notification Center', path: '/notifications', icon: 'Bell' },
   ],
   [ROLES.CXO]: [

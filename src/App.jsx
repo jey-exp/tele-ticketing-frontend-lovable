@@ -19,6 +19,7 @@ import AllTickets from "./pages/AllTickets";
 import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
 import HeatMap from "./pages/HeatMap";
+import AddUser from "./pages/AddUser";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,7 @@ const App = () => (
               <Route path="all-tickets" element={<AllTickets />} />
               <Route path="reports" element={<Reports />} />
               <Route path="heat-map" element={<HeatMap />} />
+              <Route path="add-user" element={<AddUser />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
