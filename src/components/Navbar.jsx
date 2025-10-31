@@ -18,11 +18,11 @@ export const Navbar = () => {
   const navigate = useNavigate();
 
   const getInitials = (name) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase();
+    return name;
+      // .split(' ')
+      // .map((n) => n[0])
+      // .join('')
+      // .toUpperCase();
   };
 
   const handleLogout = () => {

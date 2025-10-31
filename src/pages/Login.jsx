@@ -1,19 +1,22 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from '@/contexts/UserContext';
+import { useUser } from '../contexts/UserContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { jwtDecode } from 'jwt-decode';
-import { sidebarLinks } from '@/config/rolesConfig';
+import { sidebarLinks } from '../config/rolesConfig';
+import apiClient from '../services/api'; // Dr. X's Note: Import our centralized API client.
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { setUser } = useUser();
+  
+  // Dr. X's Note: We now get the 'login' function directly from our context.
+  const { login } = useUser();
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -27,46 +30,35 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8080/auth/signin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Invalid credentials');
-      }
-
-      const data = await response.json();
-      const token = data.token;
-
-      // Store token in localStorage
-      localStorage.setItem('authToken', token);
-
-      // Decode token to get user info
-      const decoded = jwtDecode(token);
+      // Dr. X's Note: Replaced the entire 'fetch' block with a single, clean apiClient call.
+      // Headers, method, and base URL are all handled automatically.
       
-      // Set user context with decoded token data
-      const userData = {
-        name: decoded.name || decoded.username || username,
-        role: decoded.role,
-        email: 'user@example.com', // Default email as backend doesn't provide it
-        username: decoded.username || username,
-      };
+      const response = await apiClient.post('/auth/signin', { username, password });
 
-      setUser(userData);
+      const token = response.data.accessToken;
+
+      // Dr. X's Note: This is the most important change.
+      // We call the single 'login' function from our context.
+      // It handles setting the token in localStorage and updating the global user state.
+      // This is clean, reusable, and the single source of truth.
+      login(token);
 
       toast.success('Login successful!');
+      
+      // Dr. X's Note: For immediate navigation, we can decode the token here
+      // to determine the user's role and find their default page.
+      const decodedToken = jwtDecode(token);
+      // Our backend puts roles in an 'authorities' claim. We take the first one.
+      const userRole = decodedToken.authorities ? decodedToken.authorities[0] : null;
 
-      // Navigate to first sidebar link for user's role
-      const roleLinks = sidebarLinks[decoded.role] || [];
+      const roleLinks = sidebarLinks[userRole] || [];
       const firstLink = roleLinks[0]?.path || '/dashboard';
       navigate(firstLink);
 
     } catch (error) {
-      toast.error(error.message || 'Login failed. Please check your credentials.');
+      // Dr. X's Note: Error handling is now more specific to our apiClient setup.
+      const errorMessage = error.response?.data?.message || 'Login failed. Please check your credentials.';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

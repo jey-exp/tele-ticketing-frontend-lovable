@@ -1,65 +1,105 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { getTicketsNeedingFeedback, getTicketsWithFeedback } from '@/data/mockTickets';
-import { Star } from 'lucide-react';
-import { format } from 'date-fns';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { Star, Loader2, AlertTriangle } from 'lucide-react';
+import { useUser } from '@/contexts/UserContext';
+import apiClient from '@/services/api';
 
 const Feedback = () => {
   const { toast } = useToast();
+  const { user, isLoading: isUserLoading } = useUser();
+
+  // Dr. X's Note: State for fetching and displaying the list of tickets.
+  const [pendingTickets, setPendingTickets] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // State for the feedback submission modal.
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [feedbackText, setFeedbackText] = useState('');
-  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const ticketsNeedingFeedback = getTicketsNeedingFeedback();
-  const ticketsWithFeedback = getTicketsWithFeedback();
+  // Function to fetch tickets that need feedback.
+  const fetchPendingTickets = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await apiClient.get('/customer/tickets/feedback-pending');
+      setPendingTickets(response.data);
+    } catch (err) {
+      console.error("Failed to fetch pending tickets:", err);
+      setError("Could not load tickets. Please try again later.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Dr. X's Note: Use useEffect to fetch data when the component mounts and the user is available.
+  useEffect(() => {
+    if (user) {
+      fetchPendingTickets();
+    }
+  }, [user]); // Re-run this effect if the user object changes.
 
   const handleCardClick = (ticket) => {
     setSelectedTicket(ticket);
     setRating(0);
     setHoveredRating(0);
     setFeedbackText('');
-    setShowFeedbackModal(true);
   };
 
-  const handleSubmitFeedback = () => {
+  const handleSubmitFeedback = async () => {
     if (rating === 0) {
       toast({
         title: 'Rating Required',
-        description: 'Please provide a rating before submitting feedback.',
+        description: 'Please select a star rating before submitting.',
         variant: 'destructive',
       });
       return;
     }
-
-    toast({
-      title: 'Feedback Submitted',
-      description: `Thank you for rating ticket ${selectedTicket.id}!`,
-    });
+    setIsSubmitting(true);
     
-    setShowFeedbackModal(false);
-    setSelectedTicket(null);
+    // The payload must match the backend's FeedbackRequestDto.
+    const payload = {
+      rating: rating,
+      comment: feedbackText,
+    };
+
+    try {
+      await apiClient.post(`/customer/tickets/${selectedTicket.id}/feedback`, payload);
+      toast({
+        title: 'Feedback Submitted',
+        description: `Thank you for your feedback on ticket ${selectedTicket.ticketUid}!`,
+      });
+      setSelectedTicket(null); // Close the modal
+      // Dr. X's Note: Refresh the list to remove the ticket that was just reviewed.
+      // This keeps the UI perfectly in sync with the backend state.
+      fetchPendingTickets(); 
+    } catch (err) {
+      toast({
+        title: 'Submission Failed',
+        description: err.response?.data?.message || 'An error occurred.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  // Handle user loading state
+  if (isUserLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -74,7 +114,11 @@ const Feedback = () => {
       {/* Tickets Needing Feedback */}
       <div>
         <h2 className="text-xl font-semibold mb-4">Pending Feedback</h2>
-        {ticketsNeedingFeedback.length === 0 ? (
+        {isLoading ? (
+          <p className="text-center text-muted-foreground">Loading tickets...</p>
+        ) : error ? (
+          <p className="text-center text-red-600">{error}</p>
+        ) : pendingTickets.length === 0 ? (
           <Card>
             <CardContent className="pt-6">
               <p className="text-center text-muted-foreground">
@@ -84,7 +128,7 @@ const Feedback = () => {
           </Card>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {ticketsNeedingFeedback.map((ticket) => (
+            {pendingTickets.map((ticket) => (
               <Card
                 key={ticket.id}
                 className="cursor-pointer transition-all hover:shadow-lg"
@@ -93,28 +137,15 @@ const Feedback = () => {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
-                      <CardTitle className="text-base">{ticket.id}</CardTitle>
+                      {/* Use the correct field names from our TicketSummaryDto */}
+                      <CardTitle className="text-base">{ticket.ticketUid}</CardTitle>
                       <CardDescription className="line-clamp-2">
                         {ticket.title}
                       </CardDescription>
                     </div>
-                    <Badge className="bg-purple-500/10 text-purple-700 dark:text-purple-400">
-                      Feedback Required
-                    </Badge>
+                    <Badge variant="destructive">Feedback Required</Badge>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {ticket.description}
-                    </p>
-                    <div className="flex gap-2">
-                      <Badge variant="outline" className="text-xs">
-                        {ticket.category}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardContent>
               </Card>
             ))}
           </div>
@@ -125,79 +156,29 @@ const Feedback = () => {
       <div>
         <h2 className="text-xl font-semibold mb-4">Feedback History</h2>
         <Card>
-          <CardContent className="p-0">
-            {ticketsWithFeedback.length === 0 ? (
-              <div className="p-6">
-                <p className="text-center text-muted-foreground">
-                  No feedback history available.
-                </p>
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Ticket ID</TableHead>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Rating</TableHead>
-                    <TableHead>Feedback</TableHead>
-                    <TableHead>Resolved On</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {ticketsWithFeedback.map((ticket) => (
-                    <TableRow key={ticket.id}>
-                      <TableCell className="font-medium">{ticket.id}</TableCell>
-                      <TableCell className="max-w-xs truncate">{ticket.title}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-4 w-4 ${
-                                i < ticket.rating
-                                  ? 'fill-yellow-400 text-yellow-400'
-                                  : 'text-gray-300'
-                              }`}
-                            />
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell className="max-w-md truncate">
-                        {ticket.feedbackText || 'No written feedback'}
-                      </TableCell>
-                      <TableCell>
-                        {ticket.resolvedAt
-                          ? format(new Date(ticket.resolvedAt), 'PP')
-                          : '-'}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
+          <CardContent className="pt-6">
+            <p className="text-center text-muted-foreground">Coming soon...</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Feedback Modal */}
-      <Dialog open={showFeedbackModal} onOpenChange={setShowFeedbackModal}>
+      <Dialog open={!!selectedTicket} onOpenChange={() => setSelectedTicket(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Provide Feedback</DialogTitle>
             <DialogDescription>
-              Rate your experience with ticket {selectedTicket?.id}
+              Rate your experience with ticket {selectedTicket?.ticketUid}
             </DialogDescription>
           </DialogHeader>
 
           {selectedTicket && (
             <div className="space-y-4 py-4">
-              {/* Ticket Info */}
               <div className="space-y-2">
                 <h4 className="text-sm font-semibold">Ticket Details</h4>
                 <p className="text-sm text-muted-foreground">{selectedTicket.title}</p>
               </div>
 
-              {/* Star Rating */}
               <div className="space-y-2">
                 <h4 className="text-sm font-semibold">Rating *</h4>
                 <div className="flex items-center gap-2">
@@ -214,15 +195,9 @@ const Feedback = () => {
                       onMouseLeave={() => setHoveredRating(0)}
                     />
                   ))}
-                  {rating > 0 && (
-                    <span className="text-sm text-muted-foreground ml-2">
-                      {rating} star{rating !== 1 ? 's' : ''}
-                    </span>
-                  )}
                 </div>
               </div>
 
-              {/* Feedback Text */}
               <div className="space-y-2">
                 <h4 className="text-sm font-semibold">Additional Comments (Optional)</h4>
                 <Textarea
@@ -236,10 +211,19 @@ const Feedback = () => {
           )}
 
           <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={() => setShowFeedbackModal(false)}>
+            <Button variant="outline" onClick={() => setSelectedTicket(null)}>
               Cancel
             </Button>
-            <Button onClick={handleSubmitFeedback}>Submit Feedback</Button>
+            <Button onClick={handleSubmitFeedback} disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                'Submit Feedback'
+              )}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

@@ -21,6 +21,7 @@ import NotFound from "./pages/NotFound";
 import HeatMap from "./pages/HeatMap";
 import AddUser from "./pages/AddUser";
 import Login from "./pages/Login";
+import { LogoutButton } from "./components/LogoutButton";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +65,7 @@ const App = () => (
               <Route path="reports" element={<Reports />} />
               <Route path="heat-map" element={<HeatMap />} />
               <Route path="add-user" element={<AddUser />} />
+              <Route path="logout" element={<LogoutButton />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

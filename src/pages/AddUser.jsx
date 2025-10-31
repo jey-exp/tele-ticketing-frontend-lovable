@@ -4,19 +4,34 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner'; // Using sonner for toasts as per your previous component
+import { Loader2 } from 'lucide-react';
 import { ROLES } from '@/config/rolesConfig';
-import { mockEngineers } from '@/data/mockEngineers';
+import apiClient from '../services/api'; // Dr. X's Note: Always use our centralized API client.
 
-// Mock team leads data
+// Dr. X's Note: This data must eventually be fetched from the backend.
+// For now, mocking is acceptable for focused development.
 const mockTeamLeads = [
   { id: 'TL-001', name: 'Sarah Johnson' },
   { id: 'TL-002', name: 'Michael Chen' },
   { id: 'TL-003', name: 'Emily Rodriguez' },
 ];
 
+// This map correctly translates frontend display values to the simple string format our backend expects.
+const roleMap = {
+  'Customer': 'customer',
+  'Agent': 'agent',
+  'Triage Officer': 'triage_officer',
+  'Field Engineer': 'field_engineer',
+  'NOC Engineer': 'noc_engineer',
+  'L1 Engineer': 'l1_engineer',
+  'Team Lead': 'team_lead',
+  'Manager': 'manager',
+  'CXO': 'cxo',
+  'NOC Admin': 'noc_admin',
+};
+
 const AddUser = () => {
-  const { toast } = useToast();
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -24,63 +39,66 @@ const AddUser = () => {
     role: '',
     teamLead: '',
   });
+  
+  // Dr. X's Note: Add isLoading state for proper user feedback on the button.
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Engineering roles that can be assigned
-  const engineeringRoles = [
-    ROLES.L1_ENGINEER,
-    ROLES.NOC_ENGINEER,
-    ROLES.FIELD_ENGINEER,
-    ROLES.TRIAGE_OFFICER,
-    ROLES.TEAM_LEAD,
+  // This list defines which roles are available in the dropdown.
+  const availableRoles = [
+    ROLES.CUSTOMER,
     ROLES.AGENT,
+    ROLES.TRIAGE_OFFICER,
+    ROLES.FIELD_ENGINEER,
+    ROLES.NOC_ENGINEER,
+    ROLES.L1_ENGINEER,
+    ROLES.TEAM_LEAD,
+    ROLES.MANAGER,
   ];
 
   const handleInputChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation
     if (!formData.username || !formData.password || !formData.fullName || !formData.role) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please fill in all required fields.',
-        variant: 'destructive',
-      });
+      toast.error('Please fill in all required fields.');
+      return;
+    }
+    if (formData.password.length < 6) {
+      toast.error('Password must be at least 6 characters long.');
       return;
     }
 
-    // Password validation
-    if (formData.password.length < 8) {
-      toast({
-        title: 'Validation Error',
-        description: 'Password must be at least 8 characters long.',
-        variant: 'destructive',
+    setIsLoading(true);
+
+    try {
+      // Dr. X's Note: The payload construction is now simplified and directly matches the SignupRequestDto.
+      // The role is mapped and sent as an array containing a single string.
+      const payload = {
+        username: formData.username,
+        fullname: formData.fullName,
+        role: [roleMap[formData.role]], // e.g., ['customer']
+        password: formData.password,
+      };
+
+      // Dr. X's Note: Replaced direct axios call with our apiClient for architectural consistency.
+      const response = await apiClient.post('/auth/signup', payload);
+
+      toast.success(response.data.message || 'User registered successfully!');
+
+      // Reset form on success
+      setFormData({
+        username: '', password: '', fullName: '', role: '', teamLead: '',
       });
-      return;
+
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Something went wrong while creating the user.';
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
-
-    // Mock user creation
-    console.log('Creating user:', formData);
-    
-    toast({
-      title: 'User Created Successfully',
-      description: `User ${formData.fullName} (${formData.username}) has been added as ${formData.role}.`,
-    });
-
-    // Reset form
-    setFormData({
-      username: '',
-      password: '',
-      fullName: '',
-      role: '',
-      teamLead: '',
-    });
   };
 
   return (
@@ -103,9 +121,7 @@ const AddUser = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Full Name */}
             <div className="space-y-2">
-              <Label htmlFor="fullName">
-                Full Name <span className="text-destructive">*</span>
-              </Label>
+              <Label htmlFor="fullName">Full Name <span className="text-destructive">*</span></Label>
               <Input
                 id="fullName"
                 placeholder="John Doe"
@@ -115,96 +131,92 @@ const AddUser = () => {
               />
             </div>
 
-            {/* Username */}
-            <div className="space-y-2">
-              <Label htmlFor="username">
-                Username <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="username"
-                placeholder="john.doe"
-                value={formData.username}
-                onChange={(e) => handleInputChange('username', e.target.value)}
-                required
-              />
+            {/* Username and Password side-by-side */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="username">Username <span className="text-destructive">*</span></Label>
+                <Input
+                  id="username"
+                  placeholder="john.doe"
+                  value={formData.username}
+                  onChange={(e) => handleInputChange('username', e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password <span className="text-destructive">*</span></Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Minimum 6 characters"
+                  value={formData.password}
+                  onChange={(e) => handleInputChange('password', e.target.value)}
+                  required
+                />
+              </div>
             </div>
 
-            {/* Password */}
-            <div className="space-y-2">
-              <Label htmlFor="password">
-                Password <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Minimum 8 characters"
-                value={formData.password}
-                onChange={(e) => handleInputChange('password', e.target.value)}
-                required
-              />
-            </div>
+            {/* Role and Team Lead side-by-side */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="role">Role <span className="text-destructive">*</span></Label>
+                <Select
+                  value={formData.role}
+                  onValueChange={(value) => handleInputChange('role', value)}
+                >
+                  <SelectTrigger id="role">
+                    <SelectValue placeholder="Select a role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableRoles.map((role) => (
+                      <SelectItem key={role} value={role}>
+                        {role}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            {/* Role */}
-            <div className="space-y-2">
-              <Label htmlFor="role">
-                Role <span className="text-destructive">*</span>
-              </Label>
-              <Select
-                value={formData.role}
-                onValueChange={(value) => handleInputChange('role', value)}
-              >
-                <SelectTrigger id="role">
-                  <SelectValue placeholder="Select a role" />
-                </SelectTrigger>
-                <SelectContent>
-                  {engineeringRoles.map((role) => (
-                    <SelectItem key={role} value={role}>
-                      {role}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Team Lead (Optional) */}
-            <div className="space-y-2">
-              <Label htmlFor="teamLead">Team Lead (Optional)</Label>
-              <Select
-                value={formData.teamLead}
-                onValueChange={(value) => handleInputChange('teamLead', value)}
-              >
-                <SelectTrigger id="teamLead">
-                  <SelectValue placeholder="Select a team lead" />
-                </SelectTrigger>
-                <SelectContent>
-                  {mockTeamLeads.map((lead) => (
-                    <SelectItem key={lead.id} value={lead.id}>
-                      {lead.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="space-y-2">
+                <Label htmlFor="teamLead">Assign to Team (Optional)</Label>
+                <Select
+                  value={formData.teamLead}
+                  onValueChange={(value) => handleInputChange('teamLead', value)}
+                >
+                  <SelectTrigger id="teamLead">
+                    <SelectValue placeholder="Select a team lead" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {mockTeamLeads.map((lead) => (
+                      <SelectItem key={lead.id} value={lead.id}>
+                        {lead.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Submit Button */}
-            <div className="flex gap-4">
-              <Button type="submit" className="flex-1">
-                Create User
-              </Button>
+            <div className="flex justify-end gap-3 pt-4">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() =>
-                  setFormData({
-                    username: '',
-                    password: '',
-                    fullName: '',
-                    role: '',
-                    teamLead: '',
-                  })
-                }
+                onClick={() => setFormData({
+                  username: '', password: '', fullName: '', role: '', teamLead: '',
+                })}
               >
                 Clear Form
+              </Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  'Create User'
+                )}
               </Button>
             </div>
           </form>

@@ -1,16 +1,19 @@
+// Dr. X's Note: The values here now EXACTLY match the role strings
+// provided by the Spring Boot backend in the JWT's "authorities" claim.
 export const ROLES = {
-  CUSTOMER: 'Customer',
-  AGENT: 'Agent',
-  TRIAGE_OFFICER: 'Triage Officer',
-  FIELD_ENGINEER: 'Field Engineer',
-  NOC_ENGINEER: 'NOC Engineer',
-  L1_ENGINEER: 'L1 Engineer',
-  TEAM_LEAD: 'Team Lead',
-  MANAGER: 'Manager',
-  CXO: 'CXO',
-  NOC_ADMIN: 'NOC Admin',
+  CUSTOMER: 'ROLE_CUSTOMER',
+  AGENT: 'ROLE_AGENT',
+  TRIAGE_OFFICER: 'ROLE_TRIAGE_OFFICER',
+  FIELD_ENGINEER: 'ROLE_FIELD_ENGINEER',
+  NOC_ENGINEER: 'ROLE_NOC_ENGINEER',
+  L1_ENGINEER: 'ROLE_L1_ENGINEER',
+  TEAM_LEAD: 'ROLE_TEAM_LEAD',
+  MANAGER: 'ROLE_MANAGER',
+  CXO: 'ROLE_CXO',
+  NOC_ADMIN: 'ROLE_NOC_ADMIN',
 };
 
+// The structure remains the same, but the keys are now the correct backend role strings.
 export const sidebarLinks = {
   [ROLES.CUSTOMER]: [
     { label: 'Dashboard', path: '/dashboard', icon: 'LayoutDashboard' },
@@ -59,8 +62,6 @@ export const sidebarLinks = {
     { label: 'Reports', path: '/reports', icon: 'BarChart3' },
   ],
   [ROLES.NOC_ADMIN]: [
-    {
-      label: 'Heat Map',path: '/heat-map', icon: 'MapPin'
-    }
+    { label: 'Heat Map', path: '/heat-map', icon: 'MapPin' },
   ],
 };
