@@ -6,9 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Search, Loader2 } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import apiClient from '@/services/api';
+import { ROLES } from '../config/rolesConfig';
 
-// Dr. X's Note: These values now EXACTLY match our backend TicketStatus enum.
-// This is the single source of truth for filtering.
 const STATUS_OPTIONS = [
   { value: 'CREATED', label: 'Created' },
   { value: 'ASSIGNED', label: 'Assigned' },
@@ -22,34 +21,42 @@ const MyTickets = () => {
   const [tickets, setTickets] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [selectedTicketId, setSelectedTicketId] = useState(null);
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Fetch active tickets when the component mounts and a user is present.
   useEffect(() => {
-    const fetchActiveTickets = async () => {
+    const fetchTickets = async () => {
+      if (!user) return;
+
       setIsLoading(true);
       setError(null);
+      
+      let endpoint = '';
+      if (user.role === ROLES.CUSTOMER) {
+        endpoint = '/customer/tickets/active';
+      } else if (user.role === ROLES.AGENT) {
+        endpoint = '/agent/tickets/active';
+      } else {
+        setError("This page is not available for your role.");
+        setIsLoading(false);
+        return;
+      }
+
       try {
-        const response = await apiClient.get('/customer/tickets/active');
+        const response = await apiClient.get(endpoint);
         setTickets(response.data);
       } catch (err) {
-        console.error("Failed to fetch active tickets:", err);
+        console.error("Failed to fetch tickets:", err);
         setError("Could not load your tickets. Please try refreshing the page.");
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (user) {
-      fetchActiveTickets();
-    }
-  }, [user]); // This effect depends on the user object.
+    fetchTickets();
+  }, [user]);
 
-  // Dr. X's Note: useMemo is a performance optimization.
-  // This filtering logic will only re-run when the source data or filters change.
   const filteredTickets = useMemo(() => {
     return tickets.filter((ticket) => {
       const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
@@ -60,10 +67,9 @@ const MyTickets = () => {
     });
   }, [tickets, statusFilter, searchQuery]);
 
+  // Dr. X's Fix 2: The click handler now extracts and sets only the ticket's ID.
   const handleCardClick = (ticket) => {
-    console.log("Ticket : ", ticket);
-    
-    setSelectedTicket(ticket);
+    setSelectedTicketId(ticket.id);
   };
 
   return (
@@ -121,14 +127,14 @@ const MyTickets = () => {
         </div>
       )}
 
-      {/* Ticket Detail Modal */}
+      {/* Dr. X's Fix 3: The modal is now correctly wired to the ID-based state. */}
       <TicketDetailModal
-        ticket={selectedTicket}
-        open={!!selectedTicket}
-        onOpenChange={(isOpen) => !isOpen && setSelectedTicket(null)}
+        ticketId={selectedTicketId}
+        open={!!selectedTicketId}
+        onOpenChange={(isOpen) => !isOpen && setSelectedTicketId(null)}
       />
     </div>
   );
 };
 
-export default MyTickets;
+export default MyTickets; 
