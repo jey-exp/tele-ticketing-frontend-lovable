@@ -1,8 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { TicketCard } from '@/components/TicketCard';
 import { TicketDetailModal } from '@/components/TicketDetailModal';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Search, Loader2 } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import apiClient from '@/services/api';
@@ -18,6 +21,7 @@ const STATUS_OPTIONS = [
 
 const MyTickets = () => {
   const { user } = useUser();
+  const navigate = useNavigate();
   const [tickets, setTickets] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -73,56 +77,103 @@ const MyTickets = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">My Tickets</h1>
-        <p className="text-muted-foreground mt-1">View and track all your active tickets</p>
+      <div className="space-y-2">
+        <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+          My Tickets
+        </h1>
+        <p className="text-lg text-muted-foreground">
+          View and track all your active tickets
+        </p>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by Ticket ID or title..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+      {/* Enhanced Filters */}
+      <Card className="p-6 bg-gradient-to-r from-card to-card/50 border-0 shadow-lg">
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by Ticket ID or title..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 bg-background border-border/50 focus:border-primary/50 transition-all duration-200"
+            />
+          </div>
+          
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-full lg:w-[200px] bg-background border-border/50 focus:border-primary/50">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              {STATUS_OPTIONS.map(option => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          {/* Results counter */}
+          <div className="flex items-center text-sm text-muted-foreground bg-muted/30 px-3 py-2 rounded-md">
+            <span className="font-medium">{filteredTickets.length}</span>
+            <span className="ml-1">
+              {filteredTickets.length === 1 ? 'ticket' : 'tickets'}
+            </span>
+          </div>
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full sm:w-[200px]">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            {STATUS_OPTIONS.map(option => (
-              <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      </Card>
 
       {/* Tickets Grid */}
       {isLoading ? (
-        <div className="flex justify-center items-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex flex-col items-center justify-center py-16">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+          <p className="text-muted-foreground">Loading your tickets...</p>
         </div>
       ) : error ? (
-        <div className="text-center py-12 text-red-600">{error}</div>
+        <Card className="p-8 text-center border-destructive/20 bg-destructive/5">
+          <div className="text-destructive text-lg font-semibold mb-2">
+            {error}
+          </div>
+          <Button 
+            variant="outline" 
+            onClick={() => window.location.reload()}
+            className="mt-4"
+          >
+            Try Again
+          </Button>
+        </Card>
       ) : filteredTickets.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">
+        <Card className="p-12 text-center bg-gradient-to-br from-muted/20 to-muted/10 border-0">
+          <div className="mx-auto w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mb-6">
+            <Search className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <h3 className="text-lg font-semibold mb-2">
+            {searchQuery || statusFilter !== 'all' ? 'No matching tickets' : 'No active tickets'}
+          </h3>
+          <p className="text-muted-foreground mb-4">
             {searchQuery || statusFilter !== 'all'
-              ? 'No tickets match your filters.'
+              ? 'Try adjusting your search or filter criteria.'
               : 'You have no active tickets at the moment.'}
           </p>
-        </div>
+          {!searchQuery && statusFilter === 'all' && (
+            <Button 
+              onClick={() => navigate('/new-ticket')}
+              className="btn-gradient"
+            >
+              Create Your First Ticket
+            </Button>
+          )}
+        </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredTickets.map((ticket) => (
-            <TicketCard key={ticket.id} ticket={ticket} onClick={() => handleCardClick(ticket)} />
+            <TicketCard 
+              key={ticket.id} 
+              ticket={ticket} 
+              onClick={() => handleCardClick(ticket)} 
+            />
           ))}
         </div>
       )}

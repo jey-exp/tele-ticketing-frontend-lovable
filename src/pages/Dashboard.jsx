@@ -68,60 +68,136 @@ const Dashboard = () => {
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
-            Welcome back, {user?.username}! Here's your overview.
+      <div className="flex items-center justify-between mb-8">
+        <div className="space-y-2">
+          <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+            Dashboard
+          </h1>
+          <p className="text-lg text-muted-foreground">
+            Welcome back, <span className="font-semibold text-foreground">{user?.username}!</span> Here's your overview.
           </p>
         </div>
         {/* Only show the "Raise a Ticket" button for customers and agents */}
         {(user?.role === ROLES.CUSTOMER || user?.role === ROLES.AGENT) && (
-          <Button onClick={() => navigate(user.role === ROLES.CUSTOMER ? '/new-ticket' : '/create-ticket')} size="lg">
-            <Plus className="h-4 w-4 mr-2" />
+          <Button 
+            onClick={() => navigate(user.role === ROLES.CUSTOMER ? '/new-ticket' : '/create-ticket')} 
+            size="lg"
+            className="btn-gradient group"
+          >
+            <Plus className="h-4 w-4 mr-2 group-hover:rotate-90 transition-transform duration-200" />
             {user.role === ROLES.CUSTOMER ? 'Raise a Ticket' : 'Create a Ticket'}
           </Button>
         )}
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <StatsCard title="Active Tickets" value={stats.activeTickets} icon={Ticket} linkTo="/my-tickets" />
-        <StatsCard title="Resolved Tickets" value={stats.resolvedTickets} icon={CheckCircle2} />
+      <div className="grid gap-6 md:grid-cols-3 mb-8">
+        <StatsCard 
+          title="Active Tickets" 
+          value={stats.activeTickets} 
+          icon={Ticket} 
+          linkTo="/my-tickets"
+          color="info"
+          subtitle="Currently open"
+          trend={{ type: 'up', value: '+12%' }}
+        />
+        <StatsCard 
+          title="Resolved Tickets" 
+          value={stats.resolvedTickets} 
+          icon={CheckCircle2}
+          color="success"
+          subtitle="All time"
+          trend={{ type: 'up', value: '+8%' }}
+        />
         {/* Only show "Action Required" to customers */}
         {user?.role === ROLES.CUSTOMER && (
-          <StatsCard title="Action Required" value={stats.feedbackRequiredTickets} icon={MessageSquare} linkTo="/feedback" showArrowOnHover />
+          <StatsCard 
+            title="Action Required" 
+            value={stats.feedbackRequiredTickets} 
+            icon={MessageSquare} 
+            linkTo="/feedback" 
+            showArrowOnHover
+            color={stats.feedbackRequiredTickets > 0 ? "warning" : "default"}
+            subtitle="Needs feedback"
+          />
+        )}
+        {/* Show different third card for agents */}
+        {user?.role === ROLES.AGENT && (
+          <StatsCard 
+            title="Pending Assignments" 
+            value={stats.pendingAssignments || 0} 
+            icon={Clock} 
+            linkTo="/pending-tickets"
+            color={stats.pendingAssignments > 0 ? "warning" : "default"}
+            subtitle="Awaiting assignment"
+          />
         )}
       </div>
 
       {/* Recent Activities */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>Recent Activities</CardTitle>
-            <CardDescription>Latest updates on your tickets</CardDescription>
+      <Card className="border-0 shadow-lg bg-gradient-to-br from-card to-card/50">
+        <CardHeader className="flex flex-row items-center justify-between pb-4">
+          <div className="space-y-1">
+            <CardTitle className="text-xl font-semibold">Recent Activities</CardTitle>
+            <CardDescription className="text-muted-foreground">
+              Latest updates on your tickets
+            </CardDescription>
           </div>
-          <Button variant="outline" size="sm" onClick={() => navigate('/notifications')}>See all</Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => navigate('/notifications')}
+            className="hover:bg-primary hover:text-primary-foreground transition-all duration-200"
+          >
+            See all
+          </Button>
         </CardHeader>
         <CardContent>
           {recentActivities.length === 0 ? (
-            <p className="text-center text-muted-foreground py-4">No recent activities to show.</p>
+            <div className="text-center py-8">
+              <div className="mx-auto w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mb-4">
+                <Clock className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <p className="text-muted-foreground font-medium">No recent activities to show.</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Activities will appear here as tickets are updated.
+              </p>
+            </div>
           ) : (
             <div className="space-y-4">
-              {recentActivities.map((activity) => (
-                <div key={activity.activityId} className="flex gap-3 items-start">
-                  {/* ... same rendering logic as before ... */}
-                  <div className="flex flex-col items-center"><div className="h-2 w-2 rounded-full bg-primary mt-2" /><div className="w-px h-full bg-border mt-1" /></div>
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">{activity.ticketUid}</span>
-                      <span className="text-xs text-muted-foreground">•</span>
-                      <span className="text-sm text-muted-foreground line-clamp-1">{activity.ticketTitle}</span>
+              {recentActivities.map((activity, index) => (
+                <div key={activity.activityId} className="group relative">
+                  <div className="flex gap-4 items-start">
+                    {/* Timeline indicator */}
+                    <div className="flex flex-col items-center">
+                      <div className={`h-3 w-3 rounded-full border-2 border-background ${
+                        index === 0 ? 'bg-primary shadow-lg shadow-primary/50' : 'bg-muted-foreground/30'
+                      } group-hover:bg-primary transition-colors duration-200`} />
+                      {index < recentActivities.length - 1 && (
+                        <div className="w-px h-12 bg-border mt-2" />
+                      )}
                     </div>
-                    <p className="text-sm text-muted-foreground">{activity.description}</p>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3" />
-                      {formatDistanceToNow(new Date(activity.createdAt), { addSuffix: true })}
+                    
+                    {/* Activity content */}
+                    <div className="flex-1 space-y-2 pb-4">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-semibold text-primary bg-primary/10 px-2 py-1 rounded-md">
+                          {activity.ticketUid}
+                        </span>
+                        <span className="text-xs text-muted-foreground">•</span>
+                        <span className="text-sm text-foreground font-medium line-clamp-1">
+                          {activity.ticketTitle}
+                        </span>
+                      </div>
+                      
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {activity.description}
+                      </p>
+                      
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Clock className="h-3 w-3" />
+                        <span>{formatDistanceToNow(new Date(activity.createdAt), { addSuffix: true })}</span>
+                      </div>
                     </div>
                   </div>
                 </div>

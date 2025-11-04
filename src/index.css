@@ -17,17 +17,17 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 220 20% 15%;
 
-    --primary: 220 70% 50%;
+    --primary: 32 100% 49%; /* #FB8C00 - vibrant orange */
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 220 70% 45%;
+    --primary-hover: 24 100% 47%; /* #EF6C00 - darker orange for hover */
 
-    --secondary: 210 15% 92%;
+    --secondary: 32 71% 70%; /* #FFA726 - lighter orange for highlights */
     --secondary-foreground: 220 20% 25%;
 
     --muted: 210 15% 95%;
     --muted-foreground: 220 10% 45%;
 
-    --accent: 38 92% 50%;
+    --accent: 32 71% 70%; /* #FFA726 - using secondary orange for accent */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
@@ -36,26 +36,26 @@ All colors MUST be HSL.
     --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
+    --warning: 32 100% 49%; /* Using primary orange for warnings too */
     --warning-foreground: 0 0% 100%;
 
     --border: 220 15% 88%;
     --input: 220 15% 88%;
-    --ring: 220 70% 50%;
+    --ring: 32 100% 49%; /* Primary orange for focus rings */
 
     --radius: 0.5rem;
 
     --sidebar-background: 220 25% 97%;
     --sidebar-foreground: 220 20% 25%;
-    --sidebar-primary: 220 70% 50%;
+    --sidebar-primary: 32 100% 49%; /* Primary orange for sidebar */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 15% 92%;
+    --sidebar-accent: 32 20% 92%; /* Light orange tint for sidebar accent */
     --sidebar-accent-foreground: 220 20% 25%;
     --sidebar-border: 220 15% 90%;
-    --sidebar-ring: 220 70% 50%;
+    --sidebar-ring: 32 100% 49%; /* Primary orange for sidebar focus */
 
-    --gradient-primary: linear-gradient(135deg, hsl(220 70% 50%) 0%, hsl(220 70% 45%) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(210 20% 98%) 0%, hsl(220 15% 96%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(32 100% 49%) 0%, hsl(24 100% 47%) 100%); /* Orange gradient */
+    --gradient-subtle: linear-gradient(180deg, hsl(210 20% 98%) 0%, hsl(32 20% 96%) 100%); /* Subtle orange tint */
     
     --shadow-sm: 0 1px 2px 0 hsl(220 20% 15% / 0.05);
     --shadow-md: 0 4px 6px -1px hsl(220 20% 15% / 0.1);
@@ -72,17 +72,17 @@ All colors MUST be HSL.
     --popover: 220 25% 10%;
     --popover-foreground: 210 20% 95%;
 
-    --primary: 220 70% 55%;
+    --primary: 32 100% 55%; /* Slightly brighter orange for dark mode */
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 220 70% 60%;
+    --primary-hover: 32 100% 60%; /* Brighter hover for dark mode */
 
-    --secondary: 220 20% 15%;
+    --secondary: 32 60% 25%; /* Darker orange tone for dark mode secondary */
     --secondary-foreground: 210 20% 90%;
 
     --muted: 220 20% 15%;
     --muted-foreground: 220 10% 60%;
 
-    --accent: 38 92% 50%;
+    --accent: 32 71% 60%; /* Adjusted orange for dark mode accent */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62% 45%;
@@ -91,24 +91,24 @@ All colors MUST be HSL.
     --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
+    --warning: 32 100% 55%; /* Primary orange for dark mode warnings */
     --warning-foreground: 0 0% 100%;
 
     --border: 220 20% 18%;
     --input: 220 20% 18%;
-    --ring: 220 70% 55%;
+    --ring: 32 100% 55%; /* Primary orange for dark mode focus rings */
 
     --sidebar-background: 220 25% 10%;
     --sidebar-foreground: 210 20% 90%;
-    --sidebar-primary: 220 70% 55%;
+    --sidebar-primary: 32 100% 55%; /* Primary orange for dark mode sidebar */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 20% 15%;
+    --sidebar-accent: 32 40% 20%; /* Dark orange tint for dark mode sidebar accent */
     --sidebar-accent-foreground: 210 20% 90%;
     --sidebar-border: 220 20% 18%;
-    --sidebar-ring: 220 70% 55%;
+    --sidebar-ring: 32 100% 55%; /* Primary orange for dark mode sidebar focus */
 
-    --gradient-primary: linear-gradient(135deg, hsl(220 70% 55%) 0%, hsl(220 70% 50%) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(220 25% 8%) 0%, hsl(220 25% 10%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(32 100% 55%) 0%, hsl(24 100% 50%) 100%); /* Dark mode orange gradient */
+    --gradient-subtle: linear-gradient(180deg, hsl(220 25% 8%) 0%, hsl(32 25% 12%) 100%); /* Subtle dark orange tint */
     
     --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
     --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.4);
@@ -122,6 +122,104 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  /* Enhanced scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
+}
+
+@layer components {
+  /* Enhanced card animations */
+  .card-hover {
+    @apply transition-all duration-200 hover:shadow-lg hover:scale-[1.02];
+  }
+
+  /* Status badge variants */
+  .status-badge-open {
+    @apply bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20;
+  }
+
+  .status-badge-in-progress {
+    @apply bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20;
+  }
+
+  .status-badge-resolved {
+    @apply bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20;
+  }
+
+  .status-badge-closed {
+    @apply bg-gray-500/10 text-gray-700 dark:text-gray-400 border-gray-500/20;
+  }
+
+  /* Priority badge variants */
+  .priority-badge-low {
+    @apply bg-gray-500/10 text-gray-700 dark:text-gray-300 border-gray-500/20;
+  }
+
+  .priority-badge-medium {
+    @apply bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20;
+  }
+
+  .priority-badge-high {
+    @apply bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/20;
+  }
+
+  .priority-badge-critical {
+    @apply bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20;
+  }
+
+  /* Enhanced button styles */
+  .btn-gradient {
+    @apply bg-gradient-to-r from-primary via-primary to-primary-hover text-primary-foreground hover:shadow-lg hover:shadow-primary/25 transition-all duration-200 hover:scale-[1.02];
+  }
+
+  /* Loading shimmer effect */
+  .shimmer {
+    @apply relative overflow-hidden;
+  }
+
+  .shimmer::before {
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-muted to-transparent;
+    content: '';
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  /* Enhanced form styles */
+  .form-section {
+    @apply space-y-6 p-6 bg-card rounded-lg border border-border/50;
+  }
+
+  /* Glass morphism effect */
+  .glass {
+    @apply bg-background/80 backdrop-blur-sm border border-border/50;
+  }
+
+  /* Enhanced focus styles */
+  .focus-enhanced {
+    @apply focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200;
   }
 }

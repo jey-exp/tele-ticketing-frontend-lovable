@@ -89,79 +89,189 @@ const AddUser = () => {
   };
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Add User</h1>
-        <p className="text-muted-foreground mt-2">Create a new user account and assign their role.</p>
+    <div className="container mx-auto py-6 space-y-8">
+      {/* Enhanced Header */}
+      <div className="space-y-2">
+        <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+          Add User
+        </h1>
+        <p className="text-lg text-muted-foreground">
+          Create a new user account and assign their role in the network ticketing system.
+        </p>
       </div>
 
-      <Card className="max-w-2xl">
-        <CardHeader>
-          <CardTitle>User Details</CardTitle>
-          <CardDescription>Enter the information for the new user account.</CardDescription>
+      <Card className="max-w-3xl border-0 shadow-xl bg-gradient-to-br from-card to-card/50">
+        <CardHeader className="space-y-1 pb-6">
+          <CardTitle className="text-2xl">User Registration</CardTitle>
+          <CardDescription className="text-base">
+            Enter the information for the new user account. Location details are required for customers.
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Full Name */}
-            <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name <span className="text-destructive">*</span></Label>
-              <Input id="fullName" placeholder="John Doe" value={formData.fullName} onChange={(e) => handleInputChange('fullName', e.target.value)} required />
-            </div>
-
-            {/* Username and Password */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="username">Username <span className="text-destructive">*</span></Label>
-                <Input id="username" placeholder="john.doe" value={formData.username} onChange={(e) => handleInputChange('username', e.target.value)} required />
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Basic Information Section */}
+            <div className="form-section">
+              <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                👤 Basic Information
+              </h3>
+              
+              {/* Full Name */}
+              <div className="space-y-3">
+                <Label htmlFor="fullName" className="text-base font-medium">
+                  Full Name <span className="text-destructive">*</span>
+                </Label>
+                <Input 
+                  id="fullName" 
+                  placeholder="Enter full name (e.g., John Doe)" 
+                  value={formData.fullName} 
+                  onChange={(e) => handleInputChange('fullName', e.target.value)} 
+                  required 
+                  className="h-12 text-base focus-enhanced"
+                />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password <span className="text-destructive">*</span></Label>
-                <Input id="password" type="password" placeholder="Minimum 6 characters" value={formData.password} onChange={(e) => handleInputChange('password', e.target.value)} required />
-              </div>
-            </div>
 
-            {/* Role */}
-            <div className="space-y-2">
-              <Label htmlFor="role">Role <span className="text-destructive">*</span></Label>
-              <Select value={formData.role} onValueChange={(value) => handleInputChange('role', value)}>
-                <SelectTrigger id="role"><SelectValue placeholder="Select a role" /></SelectTrigger>
-                <SelectContent>
-                  {availableRoles.map((role) => <SelectItem key={role} value={role}>{role}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Conditionally rendered location fields for customers. */}
-            {isCustomerRole && (
-                <div className="space-y-4 border-t pt-6 mt-6">
-                    <h3 className="text-sm font-medium text-muted-foreground">Customer Location (Required for Heatmap Analytics)</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                         <div className="space-y-2">
-                            <Label htmlFor="city">City <span className="text-destructive">*</span></Label>
-                            <Input id="city" placeholder="e.g., Chennai" value={formData.city} onChange={(e) => handleInputChange('city', e.target.value)} required={isCustomerRole} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="state">State <span className="text-destructive">*</span></Label>
-                            <Input id="state" placeholder="e.g., Tamil Nadu" value={formData.state} onChange={(e) => handleInputChange('state', e.target.value)} required={isCustomerRole} />
-                        </div>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="postalCode">Postal Code <span className="text-destructive">*</span></Label>
-                        <Input id="postalCode" placeholder="e.g., 600001" value={formData.postalCode} onChange={(e) => handleInputChange('postalCode', e.target.value)} required={isCustomerRole} />
-                    </div>
+              {/* Username and Password */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <div className="space-y-3">
+                  <Label htmlFor="username" className="text-base font-medium">
+                    Username <span className="text-destructive">*</span>
+                  </Label>
+                  <Input 
+                    id="username" 
+                    placeholder="Enter username (e.g., john.doe)" 
+                    value={formData.username} 
+                    onChange={(e) => handleInputChange('username', e.target.value)} 
+                    required 
+                    className="h-12 text-base focus-enhanced"
+                  />
                 </div>
+                <div className="space-y-3">
+                  <Label htmlFor="password" className="text-base font-medium">
+                    Password <span className="text-destructive">*</span>
+                  </Label>
+                  <Input 
+                    id="password" 
+                    type="password" 
+                    placeholder="Minimum 6 characters" 
+                    value={formData.password} 
+                    onChange={(e) => handleInputChange('password', e.target.value)} 
+                    required 
+                    className="h-12 text-base focus-enhanced"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Role Selection Section */}
+            <div className="form-section">
+              <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                🔑 Role Assignment
+              </h3>
+              
+              <div className="space-y-3">
+                <Label htmlFor="role" className="text-base font-medium">
+                  User Role <span className="text-destructive">*</span>
+                </Label>
+                <Select value={formData.role} onValueChange={(value) => handleInputChange('role', value)}>
+                  <SelectTrigger id="role" className="h-12 text-base focus-enhanced">
+                    <SelectValue placeholder="Select the user's role in the system" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableRoles.map((role) => (
+                      <SelectItem key={role} value={role} className="text-base py-3">
+                        {role}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground">
+                  Role determines the user's permissions and access level in the system
+                </p>
+              </div>
+            </div>
+
+            {/* Conditionally rendered location fields for customers */}
+            {isCustomerRole && (
+              <div className="form-section bg-orange-50/50 dark:bg-orange-950/20 border border-orange-200/50 dark:border-orange-800/50">
+                <h3 className="text-lg font-semibold text-foreground mb-2 flex items-center gap-2">
+                  📍 Customer Location
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Location information is required for customers to enable heatmap analytics and location-based services.
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <Label htmlFor="city" className="text-base font-medium">
+                      City <span className="text-destructive">*</span>
+                    </Label>
+                    <Input 
+                      id="city" 
+                      placeholder="e.g., Chennai" 
+                      value={formData.city} 
+                      onChange={(e) => handleInputChange('city', e.target.value)} 
+                      required={isCustomerRole} 
+                      className="h-12 text-base focus-enhanced"
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <Label htmlFor="state" className="text-base font-medium">
+                      State <span className="text-destructive">*</span>
+                    </Label>
+                    <Input 
+                      id="state" 
+                      placeholder="e.g., Tamil Nadu" 
+                      value={formData.state} 
+                      onChange={(e) => handleInputChange('state', e.target.value)} 
+                      required={isCustomerRole} 
+                      className="h-12 text-base focus-enhanced"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-3 mt-6">
+                  <Label htmlFor="postalCode" className="text-base font-medium">
+                    Postal Code <span className="text-destructive">*</span>
+                  </Label>
+                  <Input 
+                    id="postalCode" 
+                    placeholder="e.g., 600001" 
+                    value={formData.postalCode} 
+                    onChange={(e) => handleInputChange('postalCode', e.target.value)} 
+                    required={isCustomerRole} 
+                    className="h-12 text-base focus-enhanced"
+                  />
+                </div>
+              </div>
             )}
             
-            {/* Submit Button */}
-            <div className="flex justify-end gap-3 pt-4">
-              <Button type="button" variant="outline" onClick={() => setFormData({
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row justify-end gap-4 pt-6 border-t border-border/50">
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="lg"
+                onClick={() => setFormData({
                   username: '', password: '', fullName: '', role: '',
                   city: '', state: '', postalCode: '',
-              })}>
+                })}
+                className="px-8 order-2 sm:order-1"
+              >
                 Clear Form
               </Button>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creating...</> : 'Create User'}
+              <Button 
+                type="submit" 
+                disabled={isLoading}
+                size="lg"
+                className="btn-gradient px-8 min-w-[160px] order-1 sm:order-2"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  'Create User'
+                )}
               </Button>
             </div>
           </form>
