@@ -22,6 +22,7 @@ import HeatMap from "./pages/HeatMap";
 import AddUser from "./pages/AddUser";
 import Login from "./pages/Login";
 import { LogoutButton } from "./components/LogoutButton";
+import ManageTeam from "./components/ManageTeam";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +66,7 @@ const App = () => (
               <Route path="reports" element={<Reports />} />
               <Route path="heat-map" element={<HeatMap />} />
               <Route path="add-user" element={<AddUser />} />
+              <Route path="manage-team" element={<ManageTeam />} />
               <Route path="logout" element={<LogoutButton />} />
               <Route path="*" element={<NotFound />} />
             </Route>

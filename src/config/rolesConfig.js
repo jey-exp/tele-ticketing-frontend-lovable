@@ -52,6 +52,7 @@ export const sidebarLinks = {
     { label: 'Active Tickets', path: '/active-tickets', icon: 'Activity' },
     { label: 'SLA Risks', path: '/sla-risks', icon: 'AlertTriangle' },
     { label: 'Notification Center', path: '/notifications', icon: 'Bell' },
+    { label: 'Manage Team', path: '/manage-team', icon: 'Users' },
   ],
   [ROLES.MANAGER]: [
     { label: 'All Tickets', path: '/all-tickets', icon: 'List' },

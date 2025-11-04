@@ -1,10 +1,11 @@
-import { PagePlaceholder } from '@/components/PagePlaceholder';
+import { TeamTicketView } from '@/components/TeamTicketView';
 
 const ActiveTickets = () => {
   return (
-    <PagePlaceholder 
-      title="Active Tickets" 
-      description="Currently active tickets"
+    <TeamTicketView 
+      title="Active Team Tickets"
+      description="All tickets currently assigned to your team that are in progress."
+      apiEndpoint="/team-lead/tickets/active"
     />
   );
 };
