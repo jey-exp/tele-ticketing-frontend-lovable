@@ -23,6 +23,7 @@ import AddUser from "./pages/AddUser";
 import Login from "./pages/Login";
 import { LogoutButton } from "./components/LogoutButton";
 import ManageTeam from "./components/ManageTeam";
+import { ThemeProvider } from "./components/ThemeProvider";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">          
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
@@ -71,9 +73,11 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
+          </ThemeProvider>
         </BrowserRouter>
       </UserProvider>
     </TooltipProvider>
+
   </QueryClientProvider>
 );
 

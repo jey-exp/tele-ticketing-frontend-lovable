@@ -12,22 +12,22 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { ThemeToggle } from './ThemeToggle'; // Dr. X's Addition: Import the new component
 
 export const Navbar = () => {
   const { user, logout } = useUser();
   const navigate = useNavigate();
 
   const getInitials = (name) => {
-    return name;
-      // .split(' ')
-      // .map((n) => n[0])
-      // .join('')
-      // .toUpperCase();
+    if (!name) return 'U';
+    const names = name.split(' ');
+    if (names.length === 1) return names[0].substring(0, 2).toUpperCase();
+    return (names[0][0] + names[names.length - 1][0]).toUpperCase();
   };
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/login', { replace: true });
   };
 
   return (
@@ -50,26 +50,30 @@ export const Navbar = () => {
             <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-accent"></span>
           </Button>
 
+          {/* Dr. X's Addition: The ThemeToggle component is now self-contained. */}
+          <ThemeToggle />
+
+          {/* User Profile Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="gap-2">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="bg-primary text-primary-foreground">
-                    {getInitials(user.name)}
+                    {user ? getInitials(user.username) : '...'}
                   </AvatarFallback>
                 </Avatar>
                 <div className="hidden flex-col items-start text-left lg:flex">
-                  <span className="text-sm font-medium">{user.name}</span>
-                  <span className="text-xs text-muted-foreground">{user.role}</span>
+                  <span className="text-sm font-medium">{user?.username}</span>
+                  <span className="text-xs text-muted-foreground">{user?.role}</span>
                 </div>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium">{user.name}</p>
-                  <p className="text-xs text-muted-foreground">{user.email}</p>
-                  <p className="text-xs text-muted-foreground">{user.role}</p>
+                  <p className="text-sm font-medium">{user?.username}</p>
+                  <p className="text-xs text-muted-foreground">{user?.email || 'No email'}</p>
+                  <p className="text-xs text-muted-foreground">{user?.role}</p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
@@ -77,6 +81,7 @@ export const Navbar = () => {
                 <User className="mr-2 h-4 w-4" />
                 Profile Settings
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem className="text-destructive" onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
                 Logout
