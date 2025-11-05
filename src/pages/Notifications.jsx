@@ -1,15 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { NotificationItem } from '@/components/NotificationItem';
-import { Bell, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Bell, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import apiClient from '@/services/api';
 import { ROLES } from '../config/rolesConfig';
 
+const PAGE_SIZE = 10; // We define our page size on the frontend
+
 const Notifications = () => {
   const { user } = useUser();
-  const [notifications, setNotifications] = useState([]);
+  const [allNotifications, setAllNotifications] = useState([]); // Holds ALL notifications
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // State for client-side pagination
+  const [currentPage, setCurrentPage] = useState(1); // Page numbers are 1-based for UI
+  const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -18,7 +25,6 @@ const Notifications = () => {
         setIsLoading(true);
         setError(null);
 
-        // Dr. X's Note: Same dynamic endpoint logic as MyTickets.
         let endpoint = '';
         if (user.role === ROLES.CUSTOMER) {
             endpoint = '/customer/notifications';
@@ -31,8 +37,11 @@ const Notifications = () => {
         }
 
         try {
+            // Fetch all notifications at once
             const response = await apiClient.get(endpoint);
-            setNotifications(response.data);
+            setAllNotifications(response.data);
+            // Calculate total pages based on the full list
+            setTotalPages(Math.ceil(response.data.length / PAGE_SIZE));
         } catch (err) {
             console.error("Failed to fetch notifications:", err);
             setError("Could not load notifications. Please try again later.");
@@ -43,6 +52,13 @@ const Notifications = () => {
 
     fetchNotifications();
   }, [user]);
+
+  // Dr. X's Fix: Use useMemo to calculate the items for the *current page*
+  const currentNotifications = useMemo(() => {
+    const startIndex = (currentPage - 1) * PAGE_SIZE;
+    const endIndex = startIndex + PAGE_SIZE;
+    return allNotifications.slice(startIndex, endIndex);
+  }, [allNotifications, currentPage]);
 
   return (
     <div className="container mx-auto max-w-4xl p-6 space-y-6">
@@ -64,22 +80,45 @@ const Notifications = () => {
         </div>
       ) : error ? (
         <div className="text-center py-12 text-red-500">{error}</div>
-      ) : notifications.length === 0 ? (
+      ) : allNotifications.length === 0 ? (
         <div className="text-center py-12">
           <Bell className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <p className="text-muted-foreground">
-            You have no notifications yet.
-          </p>
+          <p className="text-muted-foreground">You have no notifications yet.</p>
         </div>
       ) : (
         <div className="space-y-3">
-          {notifications.map((notification) => (
-            // Assuming NotificationItem component can take this data structure.
+          {/* We now map over the paginated list */}
+          {currentNotifications.map((notification) => (
             <NotificationItem
               key={notification.activityId}
               notification={notification}
             />
           ))}
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between pt-4">
+          <Button
+            variant="outline"
+            onClick={() => setCurrentPage(prev => prev - 1)}
+            disabled={currentPage === 1 || isLoading}
+          >
+            <ChevronLeft className="h-4 w-4 mr-2" />
+            Previous
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Page {currentPage} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            onClick={() => setCurrentPage(prev => prev + 1)}
+            disabled={currentPage >= totalPages || isLoading}
+          >
+            Next
+            <ChevronRight className="h-4 w-4 ml-2" />
+          </Button>
         </div>
       )}
     </div>
