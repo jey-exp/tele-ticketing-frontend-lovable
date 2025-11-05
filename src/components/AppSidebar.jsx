@@ -13,15 +13,18 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils'; // Import the cn utility
 
 export const AppSidebar = () => {
   const { user } = useUser();
   const { open } = useSidebar();
-  const userLinks = sidebarLinks[user.role] || [];
+  
+  // Dr. X's Note: Added a null check for 'user' to prevent crashes on initial load.
+  const userLinks = user ? sidebarLinks[user.role] || [] : [];
 
   const getIcon = (iconName) => {
     const Icon = Icons[iconName];
-    return Icon || Icons.Circle;
+    return Icon || Icons.Circle; // Default to Circle icon if not found
   };
 
   return (
@@ -45,10 +48,14 @@ export const AppSidebar = () => {
                       <SidebarMenuButton asChild>
                         <NavLink
                           to={link.path}
+                          // Dr. X's Fix: Use `cn` to merge base styles with active styles.
                           className={({ isActive }) =>
-                            isActive
-                              ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
-                              : 'hover:bg-sidebar-accent/50'
+                            cn(
+                              // These are the base/inactive styles
+                              "text-sidebar-foreground hover:bg-sidebar-accent/50",
+                              // These styles are conditionally applied when active
+                              isActive && "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                            )
                           }
                         >
                           <IconComponent className="h-4 w-4" />
