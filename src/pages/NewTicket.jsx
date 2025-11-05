@@ -247,9 +247,6 @@ const NewTicket = () => {
           )}
           
           <div className="flex justify-end gap-3">
-             <Button variant="outline" onClick={() => setShowSuccessModal(false)}>
-               Create Another
-             </Button>
              <Button onClick={handleCloseModal}>View My Tickets</Button>
           </div>
         </DialogContent>

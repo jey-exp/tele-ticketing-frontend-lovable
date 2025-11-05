@@ -24,6 +24,7 @@ import Login from "./pages/Login";
 import { LogoutButton } from "./components/LogoutButton";
 import ManageTeam from "./components/ManageTeam";
 import { ThemeProvider } from "./components/ThemeProvider";
+import { ChatWidget } from "./components/ChatWidget";
 
 const queryClient = new QueryClient();
 
@@ -71,8 +72,9 @@ const App = () => (
               <Route path="manage-team" element={<ManageTeam />} />
               <Route path="logout" element={<LogoutButton />} />
               <Route path="*" element={<NotFound />} />
-            </Route>
-          </Routes>
+              </Route>
+            </Routes>
+            <ChatWidget />
           </ThemeProvider>
         </BrowserRouter>
       </UserProvider>
