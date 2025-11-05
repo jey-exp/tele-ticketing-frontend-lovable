@@ -8,14 +8,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
-import { Clock, AlertTriangle, User, Calendar, Tag, Users, Check, ChevronsUpDown, Loader2 } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Clock, AlertTriangle, User, Calendar, Tag, Users, Check, ChevronsUpDown, Loader2, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import apiClient from '@/services/api';
+import { format, formatDistanceToNow } from 'date-fns';
+import { Badge } from '@/components/ui/badge';
 
-// Constants matching backend enums for consistency
+// Constants matching backend enums
 const TICKET_STATUS = {
     ASSIGNED: 'ASSIGNED',
     IN_PROGRESS: 'IN_PROGRESS',
@@ -39,6 +42,7 @@ const PendingTickets = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isModalLoading, setIsModalLoading] = useState(false);
     const [selectedTicket, setSelectedTicket] = useState(null); // Will hold full ticket details
+    const [activityLogs, setActivityLogs] = useState([]); // State for the logs
     
     // State for form fields inside the modal
     const [editedPriority, setEditedPriority] = useState('');
@@ -97,15 +101,23 @@ const PendingTickets = () => {
         return { pendingTickets: tickets, reopenedTickets: [] };
     }, [tickets, user]);
 
-    // Handles clicking a ticket card to open the modal and fetch full details
+    // Handles clicking a ticket card to open the modal and fetch full details + logs
     const handleTicketClick = async (ticketSummary) => {
         setIsModalOpen(true);
         setIsModalLoading(true);
+        setActivityLogs([]); // Clear previous logs
         try {
-            const response = await apiClient.get(`/tickets/${ticketSummary.id}`);
-            const fullTicketDetails = response.data;
+            // Fetch details and logs in parallel for performance
+            const [detailsRes, logsRes] = await Promise.all([
+                apiClient.get(`/tickets/${ticketSummary.id}`),
+                apiClient.get(`/tickets/${ticketSummary.id}/logs`)
+            ]);
             
+            const fullTicketDetails = detailsRes.data;
             setSelectedTicket(fullTicketDetails);
+            setActivityLogs(logsRes.data);
+            
+            // Pre-fill form state
             setEditedPriority(fullTicketDetails.priority || '');
             setEditedSeverity(fullTicketDetails.severity || '');
             setSelectedEngineerIds(fullTicketDetails.assignedTo?.map(eng => eng.id) || []);
@@ -209,7 +221,7 @@ const PendingTickets = () => {
             
             {/* Universal Ticket Detail Modal */}
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                <DialogContent className="max-w-3xl">
+                <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
                     {isModalLoading ? (
                         <div className="flex h-48 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>
                     ) : selectedTicket && (
@@ -221,20 +233,51 @@ const PendingTickets = () => {
                                 </DialogDescription>
                             </DialogHeader>
                             
-                            <div className="py-4 space-y-6">
+                            <div className="py-4 space-y-6 overflow-y-auto pr-6">
                                 {/* Ticket Info */}
                                 <div>
                                     <h3 className="font-semibold mb-2">Description</h3>
                                     <p className="text-sm text-muted-foreground">{selectedTicket.description}</p>
                                 </div>
-                                {/* ... You can add more read-only details here (Customer, Created At, etc.) ... */}
+
+                                {/* Activity Log Accordion */}
+                                <Accordion type="single" collapsible className="w-full">
+                                    <AccordionItem value="item-1">
+                                        <AccordionTrigger>
+                                            <h3 className="font-semibold">View Activity History ({activityLogs.length})</h3>
+                                        </AccordionTrigger>
+                                        <AccordionContent>
+                                            <div className="space-y-4 max-h-48 overflow-y-auto pr-4">
+                                                {activityLogs.length === 0 ? (
+                                                    <p className="text-sm text-muted-foreground">No activities logged yet.</p>
+                                                ) : (
+                                                    activityLogs.map(log => (
+                                                        <div key={log.activityId} className="flex gap-3">
+                                                            <div className="mt-1">
+                                                                <User className="h-4 w-4 text-muted-foreground" />
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <p className="text-sm font-medium">{log.user.fullName}
+                                                                    <span className="text-xs text-muted-foreground ml-2">({log.activityType})</span>
+                                                                </p>
+                                                                <p className="text-sm text-muted-foreground">{log.description}</p>
+                                                                <p className="text-xs text-muted-foreground mt-1">
+                                                                    {formatDistanceToNow(new Date(log.createdAt), { addSuffix: true })}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    ))
+                                                )}
+                                            </div>
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                </Accordion>
 
                                 {/* Triage Officer Actions */}
                                 {user.role === ROLES.TRIAGE_OFFICER && (
-                                    <div className="space-y-4 border-t pt-4">
+                                    <div className="space-y-4 pt-4">
                                         <h3 className="font-semibold">Ticket Management</h3>
                                         <div className="grid grid-cols-2 gap-4">
-                                            {/* Priority Dropdown */}
                                             <div className="space-y-2">
                                                 <Label htmlFor="priority">Priority</Label>
                                                 <Select value={editedPriority} onValueChange={setEditedPriority}><SelectTrigger><SelectValue placeholder="Set priority..."/></SelectTrigger>
@@ -243,7 +286,6 @@ const PendingTickets = () => {
                                                     </SelectContent>
                                                 </Select>
                                             </div>
-                                            {/* Severity Dropdown */}
                                             <div className="space-y-2">
                                                 <Label htmlFor="severity">Severity</Label>
                                                 <Select value={editedSeverity} onValueChange={setEditedSeverity}><SelectTrigger><SelectValue placeholder="Set severity..."/></SelectTrigger>
@@ -253,7 +295,6 @@ const PendingTickets = () => {
                                                 </Select>
                                             </div>
                                         </div>
-                                        {/* Engineer Assignment */}
                                         <div className="space-y-2">
                                             <Label>Assign Engineer(s)</Label>
                                             <Popover open={engineerSearchOpen} onOpenChange={setEngineerSearchOpen}>
@@ -287,7 +328,7 @@ const PendingTickets = () => {
 
                                 {/* Engineer Actions */}
                                 {user.role !== ROLES.TRIAGE_OFFICER && (
-                                    <div className="space-y-4 border-t pt-4">
+                                    <div className="space-y-4 pt-4">
                                         <h3 className="font-semibold">Engineer Actions</h3>
                                         <div className="space-y-2">
                                             <Label htmlFor="update">Add Update</Label>
@@ -307,7 +348,7 @@ const PendingTickets = () => {
                                     </div>
                                 )}
                             </div>
-                            <DialogFooter>
+                            <DialogFooter className="pt-4 border-t">
                                 <Button variant="outline" onClick={() => setIsModalOpen(false)}>Close</Button>
                                 <Button onClick={handleSaveChanges} disabled={isSubmitting}>
                                     {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</> : 'Save Changes'}
