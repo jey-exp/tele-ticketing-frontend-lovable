@@ -25,6 +25,10 @@ import { LogoutButton } from "./components/LogoutButton";
 import ManageTeam from "./components/ManageTeam";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { ChatWidget } from "./components/ChatWidget";
+import UserApproval from "./pages/UserApproval";
+import UserManagement from "./pages/UserManagement";
+import Signup from "./pages/Signup";
+import Welcome from "./pages/Welcome";
 
 const queryClient = new QueryClient();
 
@@ -50,9 +54,12 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">          
+        <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">          
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+              <Route path="/welcome" element={<Welcome />} />
+            <Route path="logout" element={<LogoutButton />} />
             <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<Dashboard />} />
@@ -70,7 +77,8 @@ const App = () => (
               <Route path="heat-map" element={<HeatMap />} />
               <Route path="add-user" element={<AddUser />} />
               <Route path="manage-team" element={<ManageTeam />} />
-              <Route path="logout" element={<LogoutButton />} />
+              <Route path="admin/user-approval" element={<UserApproval />} />
+              <Route path="admin/user-management" element={<UserManagement />} />
               <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>

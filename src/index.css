@@ -8,7 +8,7 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
+    --background: 0 0% 100%;
     --foreground: 220 20% 15%;
 
     --card: 0 0% 100%;
@@ -17,17 +17,17 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 220 20% 15%;
 
-    --primary: 220 70% 50%;
+    --primary: 28 100% 50%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 220 70% 45%;
+    --primary-hover: 21 100% 47%;
 
-    --secondary: 210 15% 92%;
-    --secondary-foreground: 220 20% 25%;
+    --secondary: 28 100% 95%;
+    --secondary-foreground: 28 100% 25%;
 
-    --muted: 210 15% 95%;
+    --muted: 0 0% 96%;
     --muted-foreground: 220 10% 45%;
 
-    --accent: 38 92% 50%;
+    --accent: 28 100% 70%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
@@ -39,23 +39,23 @@ All colors MUST be HSL.
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --border: 220 15% 88%;
-    --input: 220 15% 88%;
-    --ring: 220 70% 50%;
+    --border: 28 50% 90%;
+    --input: 28 30% 92%;
+    --ring: 28 100% 50%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 220 25% 97%;
+    --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 220 20% 25%;
-    --sidebar-primary: 220 70% 50%;
+    --sidebar-primary: 28 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 15% 92%;
-    --sidebar-accent-foreground: 220 20% 25%;
-    --sidebar-border: 220 15% 90%;
-    --sidebar-ring: 220 70% 50%;
+    --sidebar-accent: 28 100% 95%;
+    --sidebar-accent-foreground: 28 100% 25%;
+    --sidebar-border: 28 50% 90%;
+    --sidebar-ring: 28 100% 50%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(220 70% 50%) 0%, hsl(220 70% 45%) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(210 20% 98%) 0%, hsl(220 15% 96%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(28 100% 50%) 0%, hsl(21 100% 47%) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(28 50% 98%) 100%);
     
     --shadow-sm: 0 1px 2px 0 hsl(220 20% 15% / 0.05);
     --shadow-md: 0 4px 6px -1px hsl(220 20% 15% / 0.1);
@@ -72,9 +72,9 @@ All colors MUST be HSL.
     --popover: 220 25% 10%;
     --popover-foreground: 210 20% 95%;
 
-    --primary: 220 70% 55%;
+    --primary: 28 100% 60%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 220 70% 60%;
+    --primary-hover: 28 100% 65%;
 
     --secondary: 220 20% 15%;
     --secondary-foreground: 210 20% 90%;
@@ -82,7 +82,7 @@ All colors MUST be HSL.
     --muted: 220 20% 15%;
     --muted-foreground: 220 10% 60%;
 
-    --accent: 38 92% 50%;
+    --accent: 28 100% 70%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62% 45%;
@@ -96,18 +96,18 @@ All colors MUST be HSL.
 
     --border: 220 20% 18%;
     --input: 220 20% 18%;
-    --ring: 220 70% 55%;
+    --ring: 28 100% 60%;
 
     --sidebar-background: 220 25% 10%;
     --sidebar-foreground: 210 20% 90%;
-    --sidebar-primary: 220 70% 55%;
+    --sidebar-primary: 28 100% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 220 20% 15%;
     --sidebar-accent-foreground: 210 20% 90%;
     --sidebar-border: 220 20% 18%;
-    --sidebar-ring: 220 70% 55%;
+    --sidebar-ring: 28 100% 60%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(220 70% 55%) 0%, hsl(220 70% 50%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(28 100% 60%) 0%, hsl(28 100% 55%) 100%);
     --gradient-subtle: linear-gradient(180deg, hsl(220 25% 8%) 0%, hsl(220 25% 10%) 100%);
     
     --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
@@ -123,5 +123,51 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Orange theme utilities */
+@layer utilities {
+  .bg-orange-gradient {
+    background: linear-gradient(135deg, hsl(28 100% 50%) 0%, hsl(21 100% 47%) 100%);
+  }
+  
+  .bg-orange-subtle {
+    background: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(28 50% 98%) 100%);
+  }
+  
+  .text-orange-primary {
+    color: hsl(28 100% 50%);
+  }
+  
+  .border-orange-primary {
+    border-color: hsl(28 100% 50%);
+  }
+  
+  .hover\:bg-orange-hover:hover {
+    background-color: hsl(21 100% 47%);
+  }
+}
+
+/* Status badge variants with orange theme */
+@layer components {
+  .badge-orange {
+    @apply bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300;
+  }
+  
+  .badge-success {
+    @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300;
+  }
+  
+  .badge-warning {
+    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300;
+  }
+  
+  .badge-danger {
+    @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300;
+  }
+  
+  .badge-info {
+    @apply bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300;
   }
 }

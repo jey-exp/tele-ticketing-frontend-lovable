@@ -11,7 +11,7 @@ import apiClient from '../services/api';
 // This list contains the user-friendly display names for the roles.
 const availableRoles = [
   'Customer', 'Agent', 'Triage Officer', 'Field Engineer',
-  'NOC Engineer', 'L1 Engineer', 'Team Lead', 'Manager'
+  'NOC Engineer', 'L1 Engineer', 'Team Lead', 'Manager', 'Admin' // Dr. X's Addition
 ];
 
 const AddUser = () => {

@@ -11,6 +11,7 @@ export const ROLES = {
   MANAGER: 'ROLE_MANAGER',
   CXO: 'ROLE_CXO',
   NOC_ADMIN: 'ROLE_NOC_ADMIN',
+  ADMIN: 'ROLE_ADMIN'
 };
 
 // The structure remains the same, but the keys are now the correct backend role strings.
@@ -56,7 +57,6 @@ export const sidebarLinks = {
   ],
   [ROLES.MANAGER]: [
     { label: 'All Tickets', path: '/all-tickets', icon: 'List' },
-    { label: 'Add User', path: '/add-user', icon: 'UserPlus' },
     { label: 'Notification Center', path: '/notifications', icon: 'Bell' },
   ],
   [ROLES.CXO]: [
@@ -64,5 +64,9 @@ export const sidebarLinks = {
   ],
   [ROLES.NOC_ADMIN]: [
     { label: 'Heat Map', path: '/heat-map', icon: 'MapPin' },
+  ],
+  [ROLES.ADMIN]: [
+    { label: 'User Approval', path: '/admin/user-approval', icon: 'UserCheck' },
+    { label: 'User Management', path: '/admin/user-management', icon: 'Users' },
   ],
 };

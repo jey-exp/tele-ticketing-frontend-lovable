@@ -6,10 +6,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Clock, AlertTriangle, User, Calendar, Tag, Users, Check, ChevronsUpDown, Loader2, MessageSquare } from 'lucide-react';
+import { Clock, AlertTriangle, User, Calendar, Tag, Users, Check, ChevronsUpDown, Loader2, MessageSquare, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -17,6 +17,16 @@ import { cn } from '@/lib/utils';
 import apiClient from '@/services/api';
 import { format, formatDistanceToNow } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
 
 // Constants matching backend enums
 const TICKET_STATUS = {
@@ -28,6 +38,11 @@ const TICKET_STATUS = {
 };
 const PRIORITY = { HIGH: 'HIGH', MEDIUM: 'MEDIUM', LOW: 'LOW' };
 const SEVERITY = { CRITICAL: 'CRITICAL', HIGH: 'HIGH', MEDIUM: 'MEDIUM', LOW: 'LOW', TRIVIAL: 'TRIVIAL' };
+const ROLE_NAMES = {
+    ROLE_FIELD_ENGINEER: 'Field Engineer',
+    ROLE_NOC_ENGINEER: 'NOC Engineer',
+    ROLE_L1_ENGINEER: 'L1 Engineer',
+};
 
 const PendingTickets = () => {
     const { user, isLoading: isUserLoading } = useUser();
@@ -52,6 +67,11 @@ const PendingTickets = () => {
     const [newStatus, setNewStatus] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [engineerSearchOpen, setEngineerSearchOpen] = useState(false);
+
+    // State for the new AI Triage tab
+    const [aiSuggestions, setAiSuggestions] = useState([]);
+    const [isAiLoading, setIsAiLoading] = useState(false);
+    const [isAccepting, setIsAccepting] = useState(null); // Tracks which row is being submitted
 
     // Fetches the main list of tickets based on the user's role
     const fetchTickets = async () => {
@@ -90,7 +110,7 @@ const PendingTickets = () => {
         }
     }, [user]);
 
-    // Memoized derivation of tickets for the Triage Officer's tabs
+    // Memoized derivation of tickets for the Triage Officer's manual tabs
     const { pendingTickets, reopenedTickets } = useMemo(() => {
         if (user?.role === ROLES.TRIAGE_OFFICER) {
             return {
@@ -101,7 +121,7 @@ const PendingTickets = () => {
         return { pendingTickets: tickets, reopenedTickets: [] };
     }, [tickets, user]);
 
-    // Handles clicking a ticket card to open the modal and fetch full details + logs
+    // Handles clicking a ticket card to open the manual triage modal
     const handleTicketClick = async (ticketSummary) => {
         setIsModalOpen(true);
         setIsModalLoading(true);
@@ -132,7 +152,7 @@ const PendingTickets = () => {
         }
     };
 
-    // Handles the "Save Changes" action from the modal
+    // Handles the "Save Changes" action from the manual triage modal
     const handleSaveChanges = async () => {
         setIsSubmitting(true);
         try {
@@ -165,6 +185,58 @@ const PendingTickets = () => {
         }
     };
 
+    // Fetches AI suggestions from the new endpoint
+    const fetchAiSuggestions = async () => {
+        setIsAiLoading(true);
+        try {
+            const response = await apiClient.get('/triage/tickets/ai-suggestions');
+            // Map the response to a new state object that includes local UI state
+            setAiSuggestions(response.data.map(suggestion => ({
+                ...suggestion,
+                // Set defaults for the UI dropdowns
+                priority: suggestion.suggestedPriority,
+                severity: suggestion.suggestedSeverity,
+                assignedEngineerId: '', // User must select an engineer
+            })));
+        } catch (err) {
+            toast.error("Failed to fetch AI suggestions.");
+        } finally {
+            setIsAiLoading(false);
+        }
+    };
+
+    // Updates the local state for a single row in the AI table
+    const handleSuggestionChange = (ticketId, field, value) => {
+        setAiSuggestions(prev => prev.map(item => 
+            item.ticketId === ticketId ? { ...item, [field]: value } : item
+        ));
+    };
+
+    // Accepts and triages a single AI suggestion
+    const handleAcceptSuggestion = async (suggestion) => {
+        if (!suggestion.assignedEngineerId) {
+            toast.error("Please assign an engineer before accepting.");
+            return;
+        }
+        setIsAccepting(suggestion.ticketId);
+        try {
+            const payload = {
+                priority: suggestion.priority,
+                severity: suggestion.severity,
+                assignedToUserIds: [suggestion.assignedEngineerId], // Send the selected engineer ID
+            };
+            await apiClient.patch(`/triage/tickets/${suggestion.ticketId}`, payload);
+            toast.success(`Ticket ${suggestion.ticketUid} has been triaged.`);
+            // Refresh both lists, as this ticket is now gone from both queues
+            fetchAiSuggestions();
+            fetchTickets();
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Failed to accept suggestion.");
+        } finally {
+            setIsAccepting(null);
+        }
+    };
+    
     // Main component render logic
     if (isUserLoading) {
         return <div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
@@ -191,20 +263,86 @@ const PendingTickets = () => {
                     {user.role === ROLES.TRIAGE_OFFICER ? (
                         <Tabs defaultValue="pending" className="space-y-4">
                             <TabsList>
-                                <TabsTrigger value="pending">Pending Assignment ({pendingTickets.length})</TabsTrigger>
+                                <TabsTrigger value="pending">Pending ({pendingTickets.length})</TabsTrigger>
                                 <TabsTrigger value="reopened">Reopened ({reopenedTickets.length})</TabsTrigger>
+                                <TabsTrigger value="ai-triage" onClick={fetchAiSuggestions}>
+                                    <Wand2 className="h-4 w-4 mr-2" /> AI Triage
+                                </TabsTrigger>
                             </TabsList>
+                            
+                            {/* Manual Pending Tab */}
                             <TabsContent value="pending">
                                 {pendingTickets.length === 0 ? <p className="text-center py-12 text-muted-foreground">No tickets are pending assignment.</p> :
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {pendingTickets.map((ticket) => <TicketCard key={ticket.id} ticket={ticket} onClick={() => handleTicketClick(ticket)} />)}
                                     </div>}
                             </TabsContent>
+
+                            {/* Manual Reopened Tab */}
                             <TabsContent value="reopened">
                                 {reopenedTickets.length === 0 ? <p className="text-center py-12 text-muted-foreground">No reopened tickets.</p> :
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {reopenedTickets.map((ticket) => <TicketCard key={ticket.id} ticket={ticket} onClick={() => handleTicketClick(ticket)} />)}
                                     </div>}
+                            </TabsContent>
+
+                            {/* AI Triage Tab */}
+                            <TabsContent value="ai-triage" className="space-y-4">
+                                {isAiLoading ? (
+                                    <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin" /></div>
+                                ) : aiSuggestions.length === 0 ? (
+                                    <p className="text-center py-12 text-muted-foreground">All tickets have been triaged.</p>
+                                ) : (
+                                    <Card>
+                                        <CardContent className="p-0">
+                                            <Table>
+                                                <TableHeader>
+                                                    <TableRow>
+                                                        <TableHead>Ticket</TableHead>
+                                                        <TableHead>Priority</TableHead>
+                                                        <TableHead>Severity</TableHead>
+                                                        <TableHead>AI Suggestion (Role)</TableHead>
+                                                        <TableHead>Assign Engineer</TableHead>
+                                                        <TableHead className="text-right">Action</TableHead>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {aiSuggestions.map(item => (
+                                                        <TableRow key={item.ticketId}>
+                                                            <TableCell><div className="font-medium">{item.ticketUid}</div><div className="text-xs text-muted-foreground truncate max-w-xs">{item.title}</div></TableCell>
+                                                            <TableCell>
+                                                                <Select value={item.priority} onValueChange={(v) => handleSuggestionChange(item.ticketId, 'priority', v)}>
+                                                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                                                    <SelectContent>{Object.values(PRIORITY).map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                                                                </Select>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <Select value={item.severity} onValueChange={(v) => handleSuggestionChange(item.ticketId, 'severity', v)}>
+                                                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                                                    <SelectContent>{Object.values(SEVERITY).map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                                                                </Select>
+                                                            </TableCell>
+                                                            <TableCell><Badge variant="outline">{ROLE_NAMES[item.suggestedRole] || item.suggestedRole}</Badge></TableCell>
+                                                            <TableCell>
+                                                                <Select value={item.assignedEngineerId} onValueChange={(v) => handleSuggestionChange(item.ticketId, 'assignedEngineerId', v)}>
+                                                                    <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                                                                    <SelectContent>
+                                                                        {assignableEngineers.map(e => <SelectItem key={e.id} value={e.id}>{e.fullName}</SelectItem>)}
+                                                                    </SelectContent>
+                                                                </Select>
+                                                            </TableCell>
+                                                            <TableCell className="text-right">
+                                                                <Button size="sm" onClick={() => handleAcceptSuggestion(item)} disabled={isAccepting === item.ticketId}>
+                                                                    {isAccepting === item.ticketId ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                                                                </Button>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                        </CardContent>
+                                    </Card>
+                                )}
                             </TabsContent>
                         </Tabs>
                     ) : (
@@ -219,7 +357,7 @@ const PendingTickets = () => {
                 </>
             )}
             
-            {/* Universal Ticket Detail Modal */}
+            {/* Universal Ticket Detail Modal (for manual triage) */}
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                 <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
                     {isModalLoading ? (
@@ -265,6 +403,9 @@ const PendingTickets = () => {
                                                                     {formatDistanceToNow(new Date(log.createdAt), { addSuffix: true })}
                                                                 </p>
                                                             </div>
+                                                            {log.internalOnly && (
+                                                                <Badge variant="outline">Internal</Badge>
+                                                            )}
                                                         </div>
                                                     ))
                                                 )}
