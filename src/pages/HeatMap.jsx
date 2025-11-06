@@ -1,8 +1,8 @@
-import { PagePlaceholder } from '@/components/PagePlaceholder';
+import { ComingSoonPage } from '../components/ComingSoonPage';
 
 const HeatMap = () => {
   return (
-    <PagePlaceholder 
+    <ComingSoonPage 
       title="Heat Map" 
       description="View the heat map data"
     />

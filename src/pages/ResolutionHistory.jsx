@@ -1,8 +1,8 @@
-import { PagePlaceholder } from '@/components/PagePlaceholder';
+import { ComingSoonPage } from '../components/ComingSoonPage';
 
 const ResolutionHistory = () => {
   return (
-    <PagePlaceholder 
+    <ComingSoonPage 
       title="Resolution History" 
       description="View resolved tickets"
     />

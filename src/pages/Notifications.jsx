@@ -24,13 +24,20 @@ const Notifications = () => {
       
         setIsLoading(true);
         setError(null);
+        setAllNotifications([]); // Clear previous user's data
+        setCurrentPage(1); // Reset to first page
+        setTotalPages(0);
 
+        // Dr. X's Fix: Determine the correct API endpoint based on the user's role.
         let endpoint = '';
         if (user.role === ROLES.CUSTOMER) {
             endpoint = '/customer/notifications';
         } else if (user.role === ROLES.AGENT) {
             endpoint = '/agent/notifications';
+        } else if (user.role === ROLES.TRIAGE_OFFICER) { // Added Triage Officer
+            endpoint = '/triage/notifications';
         } else {
+            // For roles like Manager, Engineer, etc., who have no notification page.
             setError("Notifications are not available for your role.");
             setIsLoading(false);
             return;
@@ -51,14 +58,22 @@ const Notifications = () => {
     };
 
     fetchNotifications();
-  }, [user]);
+  }, [user]); // This effect re-runs when the user logs in/out.
 
-  // Dr. X's Fix: Use useMemo to calculate the items for the *current page*
+  // useMemo calculates the items for the *current page*
   const currentNotifications = useMemo(() => {
     const startIndex = (currentPage - 1) * PAGE_SIZE;
     const endIndex = startIndex + PAGE_SIZE;
     return allNotifications.slice(startIndex, endIndex);
   }, [allNotifications, currentPage]);
+
+  // Role-aware description for the header
+  const getHeaderDescription = () => {
+    if (user?.role === ROLES.TRIAGE_OFFICER) {
+      return "A feed of all ticket assignments and status changes.";
+    }
+    return "A chronological feed of all activities on your tickets.";
+  };
 
   return (
     <div className="container mx-auto max-w-4xl p-6 space-y-6">
@@ -68,7 +83,7 @@ const Notifications = () => {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Notification Center</h1>
           <p className="text-muted-foreground mt-1">
-            A chronological feed of all activities on your tickets.
+            {getHeaderDescription()}
           </p>
         </div>
       </div>
